@@ -163,6 +163,14 @@ void test_mvreg()
   cout << o4 << endl;
 }
 
+void test_maxord()
+{
+  maxord<bool> o1(true);
+  cout << o1 << endl;
+  o1.write(false);
+  cout << o1 << endl;
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -171,4 +179,5 @@ int main(int argc, char * argv[])
   test_pncounter();
   test_aworset();
   test_mvreg();
+  test_maxord();
 }

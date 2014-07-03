@@ -551,3 +551,36 @@ public:
 };
 
 
+template<typename T>
+class maxord // Keeps the max value i some total order 
+{
+private:
+  T n,f; 
+
+public:
+  maxord(T i) : n(i), f(i) { }
+
+  friend ostream &operator<<( ostream &output, const maxord<T>& o)
+  { 
+    output << "MaxOrder: " << o.n;
+    return output;            
+  }
+
+  maxord<T> write(const T& val)
+  {
+    maxord<T> r(f);
+    n=max(n,val);
+    r.n=val;
+    return r;
+  }
+
+  maxord<T> read() 
+  { 
+    return n; 
+  }
+
+  void join (maxord<T> o) // Join doesnt change initial f value
+  {
+    n=max(n,o.n);
+  }
+};
