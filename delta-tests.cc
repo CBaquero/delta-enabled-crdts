@@ -83,9 +83,28 @@ void test_twopset()
   cout << o5 << endl;
 }
 
+void test_gcounter()
+{
+  gcounter o1,o2,do1,do2;
+
+  do1.join(o1.inc("idx"));
+  do1.join(o1.inc("idx",4));
+
+  do2.join(o2.inc("idy"));
+  do2.join(o2.inc("idy"));
+
+  gcounter o3 = join(o1,o2);
+  gcounter o4 = join(join(o1,do1),join(o2,do1));
+
+  cout << o3 << endl;
+  cout << o4 << endl;
+  cout << o3.read() << endl;
+}
+
 
 int main(int argc, char * argv[])
 {
   test_gset();
   test_twopset();
+  test_gcounter();
 }

@@ -158,3 +158,53 @@ public:
   }
 };
 
+class gcounter
+{
+private:
+  map<string,int> m;
+
+public:
+  gcounter inc(string id, int tosum=1) // 2nd argument is optional
+  {
+    gcounter res;
+    pair<map<string,int>::iterator,bool> ret;
+    ret=m.insert(pair<string,int>(id,tosum));
+    if (ret.second==false) // already there, so update it
+      m.at(id)+=tosum;
+    res.m.insert(pair<string,int>(id,m.at(id)));
+    return res;
+  }
+
+  int read() // get counter value
+  {
+    int res=0;
+    map<string,int>::iterator mit;
+    for(mit=m.begin(); mit!=m.end(); ++mit) res+=mit->second;
+    return res;
+  }
+
+  void join(const gcounter& o)
+  {
+    map<string,int>::const_iterator it;
+    pair<map<string,int>::const_iterator,bool> ret;
+    for (it=o.m.begin(); it!=o.m.end(); ++it)
+    {
+      ret=m.insert(*it);
+      if (ret.second==false) // already there, so update it
+        m.at(ret.first->first)=max(ret.first->second,it->second);
+    }
+
+  }
+
+  friend ostream &operator<<( ostream &output, const gcounter& o)
+  { 
+    map<string,int>::const_iterator it;
+    output << "GCounter: ( ";
+    for (it=o.m.begin(); it!=o.m.end(); ++it)
+      output << it->first << "->" << it->second << " ";
+    output << ")";
+    return output;            
+  }
+
+};
+
