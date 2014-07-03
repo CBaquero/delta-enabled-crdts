@@ -127,6 +127,21 @@ void test_aworset()
 
 void test_mvreg()
 {
+  mvreg<string> o1,o2,do1,do2;
+
+  do1.join(o1.write("idx","hello")); 
+  do1.join(o1.write("idx","world")); 
+
+  do2.join(o2.write("idy","world")); 
+  do2.join(o2.write("idy","hello")); 
+
+  mvreg<string> o3 = join(o1,o2);
+  mvreg<string> o4 = join(join(o1,do1),join(o2,do1));
+  cout << o3 << endl;
+  cout << o4 << endl;
+  o3.write("idz","hello world");
+  o4.join(o3);
+  cout << o4 << endl;
 }
 
 int main(int argc, char * argv[])
