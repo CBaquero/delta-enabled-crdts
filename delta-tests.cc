@@ -101,10 +101,39 @@ void test_gcounter()
   cout << o3.read() << endl;
 }
 
+void test_aworset()
+{
+  aworset<char> o1,o2,do1,do2;
+
+  do1.join(o1.add("idx",'a')); 
+  do1.join(o1.add("idx",'b')); 
+
+  do2.join(o2.add("idy",'b')); 
+  do2.join(o2.add("idy",'c')); 
+  do2.join(o2.rmv('b')); 
+
+  aworset<char> o3 = join(o1,o2);
+  aworset<char> o4 = join(join(o1,do1),join(o2,do1));
+  cout << o3 << endl;
+  cout << o4 << endl;
+  cout << o3.in('c') << o3.in('b') << endl;
+
+  aworset<string> o5;
+  o5.add("idz","hello");
+  o5.add("idz","world");
+  o5.add("idz","my");
+  cout << o5 << endl;
+}
+
+void test_mvreg()
+{
+}
 
 int main(int argc, char * argv[])
 {
   test_gset();
   test_twopset();
   test_gcounter();
+  test_aworset();
+  test_mvreg();
 }
