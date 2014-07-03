@@ -17,9 +17,10 @@ MVRegister: An optimized multi-value register (new unpublished datatype)
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
-Check the delta-tests.cc file to get a rough idea on how to use the datatypes 
+Check the delta-tests.cc file to get a rough idea on how to use the datatypes.  
+The code is still in a very early state and was not properly tested yet. 
 
-For more information on CRDTs and the newer comcpet of delta mutation consider checking the following papers:
+For more information on CRDTs and the newer concept of delta mutation consider checking the following papers:
 
 A comprehensive study of Convergent and Commutative Replicated Data Types
 
