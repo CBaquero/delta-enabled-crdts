@@ -17,6 +17,8 @@ AWORSet: A add-wins optimized observed-remove set that allows adds and removes
 
 MVRegister: An optimized multi-value register (new unpublished datatype)
 
+MaxOrder: Keeps the maximum value in an ordered payload type
+
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
 Check the delta-tests.cc file to get a rough idea on how to use the datatypes.  

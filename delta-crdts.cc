@@ -552,7 +552,7 @@ public:
 
 
 template<typename T>
-class maxord // Keeps the max value i some total order 
+class maxord // Keeps the max value in some total order 
 {
 private:
   T n,f; 
