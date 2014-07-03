@@ -208,6 +208,48 @@ public:
 
 };
 
+class pncounter
+{
+private:
+  gcounter p,n;
+
+public:
+  pncounter inc(string id, int tosum=1) // 2nd argument is optional
+  {
+    pncounter res;
+    res.p = p.inc(id,tosum); 
+    return res;
+  }
+
+  pncounter dec(string id, int tosum=1) // 2nd argument is optional
+  {
+    pncounter res;
+    res.n = n.inc(id,tosum); 
+    return res;
+  }
+
+
+  int read() // get counter value
+  {
+    int res=p.read()-n.read();
+    return res;
+  }
+
+  void join(const pncounter& o)
+  {
+    p.join(o.p);
+    n.join(o.n);
+  }
+
+  friend ostream &operator<<( ostream &output, const pncounter& o)
+  { 
+    output << "PNCounter:P:" << o.p << " PNCounter:N:" << o.n;
+    return output;            
+  }
+
+};
+
+
 template<typename T>
 class dotkernel
 {

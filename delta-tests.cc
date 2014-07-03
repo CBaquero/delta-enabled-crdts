@@ -101,6 +101,25 @@ void test_gcounter()
   cout << o3.read() << endl;
 }
 
+void test_pncounter()
+{
+  pncounter o1,o2,do1,do2;
+
+  do1.join(o1.inc("idx",3));
+  do1.join(o1.dec("idx"));
+
+  do2.join(o2.inc("idy"));
+  do2.join(o2.inc("idy"));
+
+  pncounter o3 = join(o1,o2);
+  pncounter o4 = join(join(o1,do1),join(o2,do1));
+
+  cout << o3 << endl;
+  cout << o4 << endl;
+  cout << o3.read() << endl;
+}
+
+
 void test_aworset()
 {
   aworset<char> o1,o2,do1,do2;
@@ -149,6 +168,7 @@ int main(int argc, char * argv[])
   test_gset();
   test_twopset();
   test_gcounter();
+  test_pncounter();
   test_aworset();
   test_mvreg();
 }

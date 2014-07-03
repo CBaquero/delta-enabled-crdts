@@ -11,6 +11,8 @@ GSet: A grow only set
 
 GCounter: A grow only counter
 
+PNCounter: A counter supporting increment and decrement
+
 AWORSet: A add-wins optimized observed-remove set that allows adds and removes
 
 MVRegister: An optimized multi-value register (new unpublished datatype)
