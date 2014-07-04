@@ -29,7 +29,7 @@ Simple Example
 Lets make two replicas of an add-wins or-set of strings. Node `x` uses replica `sx` and node `y` uses `sy` (in practice you would like to run this in diferent nodes, and serialize state to move it between nodes). The first node will add and them remove a given string and the other node will add that same string and a diferent one. Finally we will join the two states and see the result. 
 
 ```cpp
-aworset<string> sx,xy;
+aworset<string> sx,sy;
 
 // Node x
 sx.add("x","apple");
@@ -43,9 +43,26 @@ sx.join(sy);
 cout << sx.read() << endl;
 ```
 
-The output will be:
+The output will be: `( apple juice )`
 
-`( apple juice )`
+With a remove-wins or-set the rmv need to supply a node id. 
+
+```cpp
+rworset<string> sx,sy;
+
+// Node x
+sx.add("x","apple");
+sx.rmv("x","apple");
+// Node y
+sy.add("y","juice");
+sy.add("y","apple");
+
+// Join into one object and show it 
+sx.join(sy);
+cout << sx.read() << endl;
+```
+
+The output will be: `( juice )`
 
 
 Additional information
