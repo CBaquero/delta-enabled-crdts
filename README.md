@@ -23,6 +23,31 @@ Each datatype depicts some mutation methods and some access methods. Mutations w
 Check the delta-tests.cc file to get a rough idea on how to use the datatypes.  
 The code is still in a very early state and was not properly tested yet. 
 
+Simple Example
+--------------
+
+Lets make two replicas of an add-wins or-set of strings. Node `x` uses replica `sx` and node `y` uses `sy` (in practice you would like to run this in diferent nodes, and serialize state to move it between nodes). The first node will add and them remove a given string and the other node will add that same string and a diferent one. Finally we will join the two states and see the result. 
+
+```cpp
+aworset<string> sx,xy;
+
+// Node x
+sx.add("x","apple");
+sx.rmv("apple");
+// Node y
+sy.add("y","juice");
+sy.add("y","apple");
+
+// Join into one object and show it 
+sx.join(sy);
+cout << sx.read() << endl;
+```
+
+The output will be:
+
+`( apple juice )`
+
+
 Additional information
 ----------------------
 
