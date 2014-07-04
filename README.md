@@ -45,7 +45,7 @@ cout << sx.read() << endl;
 
 The output will be: `( apple juice )`
 
-With a remove-wins or-set the rmv need to supply a node id. 
+With a remove-wins or-set the `rmv` needs to supply a node id. 
 
 ```cpp
 rworset<string> sx,sy;
