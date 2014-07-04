@@ -67,8 +67,10 @@ The output will be: `( juice )`
 Example with delta-mutations
 ----------------------------
 
-The above example show how to operate with standard state-based CRDTs. One drawback is that we need to ship and join full states. It would be much better if we  
-could ship instead only the parts of the state that changed. We call these parts deltas. 
+The above example show how to operate with standard state-based CRDTs. One
+drawback is that we need to ship and join full states. It would be much better
+if we  could ship instead only the parts of the state that changed. We call
+these parts deltas. 
 
 In the next example, using a simple grow-only set of integers `gset<int>`, node
 `x` will create a replica and replicate it to node `y`. Afterwards we will do
