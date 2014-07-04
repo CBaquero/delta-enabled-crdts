@@ -43,6 +43,24 @@ T join(const T& l, const T& r) // assuming copy constructor
 }
 
 template<typename T>
+ostream &operator<<( ostream &output, const pair<T,bool>& o)
+{
+  output << "(" << o.first << "," << o.second << ")";
+  return output;
+}
+
+template<typename T>
+ostream &operator<<( ostream &output, const set<T>& o)
+{
+  typename set<T>::iterator it;
+  output << "( ";
+  for (it=o.begin(); it!=o.end(); ++it)
+    output << *it << " ";
+  output << ")";
+  return output;
+}
+
+template<typename T>
 class gset
 {
 private:
@@ -62,11 +80,7 @@ public:
 
   friend ostream &operator<<( ostream &output, const gset<T>& o)
   { 
-    typename set<T>::iterator it;
-    output << "GSet: ( ";
-    for (it=o.s.begin(); it!=o.s.end(); ++it)
-      output << *it << " ";
-    output << ")";
+    output << "GSet: " << o.s;
     return output;            
   }
 
@@ -106,15 +120,7 @@ public:
 
   friend ostream &operator<<( ostream &output, const twopset<T>& o)
   { 
-    typename set<T>::iterator it;
-    output << "2PSet: S ( ";
-    for (it=o.s.begin(); it!=o.s.end(); ++it)
-      output << *it << " ";
-    output << ")";
-    output << " T ( ";
-    for (it=o.t.begin(); it!=o.t.end(); ++it)
-      output << *it << " ";
-    output << ")";
+    output << "2PSet: S" << o.s << " T " << o.t;
     return output;            
   }
 
@@ -259,20 +265,20 @@ public:
   map<string,int> cc; // Compact causal context
   set<pair<string,int> > dc; // Dot cloud
 
-  friend ostream &operator<<( ostream &output, dotkernel<T>& o)
+  friend ostream &operator<<( ostream &output, const dotkernel<T>& o)
   { 
     output << "Kernel: DS ( ";
-    for(typename  map<pair<string,int>,T>::iterator it=o.ds.begin(); 
+    for(typename  map<pair<string,int>,T>::const_iterator it=o.ds.begin(); 
         it!=o.ds.end(); ++it)
       output <<  it->first.first << ":" << it->first.second << 
         "->" << it->second << " ";
     output << ")";
     output << " CC ( ";
-    for(map<string,int>::iterator it=o.cc.begin(); it!=o.cc.end(); ++it)
+    for(map<string,int>::const_iterator it=o.cc.begin(); it!=o.cc.end(); ++it)
       output << it->first << ":" << it->second << " ";
     output << ")";
     output << " DC ( ";
-    for(set<pair<string,int> >::iterator it=o.dc.begin(); it!=o.dc.end(); ++it)
+    for(set<pair<string,int> >::const_iterator it=o.dc.begin(); it!=o.dc.end(); ++it)
       output << it->first << ":" << it->second << " ";
     output << ")";
     return output;            
@@ -458,7 +464,7 @@ private:
   dotkernel<T> dk; // Dot kernel
 
 public:
-  friend ostream &operator<<( ostream &output, aworset<T>& o)
+  friend ostream &operator<<( ostream &output, const aworset<T>& o)
   { 
     output << "AWORSet:" << o.dk;
     return output;            
@@ -489,10 +495,9 @@ public:
 
   aworset<T> add (string id, const T& val) 
   {
-    aworset<T> r,a;
+    aworset<T> r;
     r.dk=dk.rmv(val); // optimization that first deletes val
-    a.dk=dk.add(id,val);
-    r.join(a);
+    r.dk.join(dk.add(id,val));
     return r;
   }
 
@@ -512,13 +517,83 @@ public:
 };
 
 template<typename T>
+class rworset    // Remove-Wins Observed-Remove Set
+{
+private:
+  dotkernel<pair<T,bool> > dk; // Dot kernel
+
+public:
+  friend ostream &operator<<( ostream &output, const rworset<T>& o)
+  { 
+    output << "RWORSet:" << o.dk;
+    return output;            
+  }
+
+  set<T> read ()
+  {
+    set<T> res;
+    map<T,bool> elems;
+    typename map<pair<string,int>,pair<T,bool> >::iterator dsit;
+    pair<typename map<T,bool>::iterator,bool> ret;
+    for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
+    {
+      ret=elems.insert(pair<T,bool>(dsit->second));
+      if (ret.second==false) // val already exists
+      {
+        elems.at(ret.first->first) &= dsit->second.second; // Fold by &&
+      }
+    }
+    typename map<T,bool>::iterator mit;
+    for (mit=elems.begin(); mit != elems.end(); ++mit)
+    {
+      if (mit->second == true) res.insert(mit->first);
+    }
+    return res;
+  }
+
+  bool in (const T& val) // Could
+  { 
+    // Code could be slightly faster if re-using only part of read code
+    set<T> s=read();
+    if ( s.find(val) != s.end() ) return true;
+    return false;
+  }
+
+
+  rworset<T> add (string id, const T& val) 
+  {
+    rworset<T> r;
+    r.dk=dk.rmv(pair<T,bool>(val,true));  // Remove any observed add token
+    r.dk.join(dk.rmv(pair<T,bool>(val,false))); // Remove any observed remove token
+    r.dk.join(dk.add(id,pair<T,bool>(val,true)));
+    return r;
+  }
+
+  rworset<T> rmv (string id, const T& val)
+  {
+    rworset<T> r;
+    r.dk=dk.rmv(pair<T,bool>(val,true));  // Remove any observed add token
+    r.dk.join(dk.rmv(pair<T,bool>(val,false))); // Remove any observed remove token
+    r.dk.join(dk.add(id,pair<T,bool>(val,false)));
+    return r;
+  }
+
+  void join (rworset<T> o)
+  {
+    dk.join(o.dk);
+  }
+};
+
+
+
+template<typename T>
 class mvreg    // Multi-value register, Optimized
 {
 private:
   dotkernel<T> dk; // Dot kernel
 
 public:
-  friend ostream &operator<<( ostream &output, mvreg<T>& o)
+  friend ostream &operator<<( ostream &output, const mvreg<T>& o)
   { 
     output << "MVReg:" << o.dk;
     return output;            

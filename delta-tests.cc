@@ -144,6 +144,26 @@ void test_aworset()
   cout << o5 << endl;
 }
 
+void test_rworset()
+{
+  rworset<char> o1,o2,do1,do2;
+
+  do1.join(o1.add("idx",'a')); 
+  do1.join(o1.add("idx",'b')); 
+
+  do2.join(o2.add("idy",'b')); 
+  do2.join(o2.add("idy",'c')); 
+  do2.join(o2.rmv("idy",'b')); 
+
+  rworset<char> o3 = join(o1,o2);
+  rworset<char> o4 = join(join(o1,do1),join(o2,do1));
+  cout << o3 << endl;
+  cout << o4 << endl;
+
+  cout << o4.read() << endl;
+  cout << o3.in('a') << o3.in('b') << endl;
+}
+
 void test_mvreg()
 {
   mvreg<string> o1,o2,do1,do2;
@@ -191,6 +211,7 @@ int main(int argc, char * argv[])
   test_gcounter();
   test_pncounter();
   test_aworset();
+  test_rworset();
   test_mvreg();
   test_maxord();
 }

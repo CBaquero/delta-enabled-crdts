@@ -13,6 +13,7 @@ Current datatypes are:
   * GCounter: A grow only counter
   * PNCounter: A counter supporting increment and decrement
   * AWORSet: A add-wins optimized observed-remove set that allows adds and removes
+  * RWORSet: A remove-wins optimized observed-remove set that allows adds and removes
   * MVRegister: An optimized multi-value register (new unpublished datatype)
   * MaxOrder: Keeps the maximum value in an ordered payload type
   * MinOrder: Keeps the minimum value in an ordered payload type
