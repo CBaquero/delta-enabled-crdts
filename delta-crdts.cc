@@ -550,7 +550,6 @@ public:
   }
 };
 
-
 template<typename T>
 class maxord // Keeps the max value in some total order 
 {
@@ -584,3 +583,38 @@ public:
     n=max(n,o.n);
   }
 };
+
+template<typename T>
+class minord // Keeps the max value in some total order 
+{
+private:
+  T n,f; 
+
+public:
+  minord(T i) : n(i), f(i) { }
+
+  friend ostream &operator<<( ostream &output, const minord<T>& o)
+  { 
+    output << "MinOrder: " << o.n;
+    return output;            
+  }
+
+  minord<T> write(const T& val)
+  {
+    minord<T> r(f);
+    n=min(n,val);
+    r.n=val;
+    return r;
+  }
+
+  minord<T> read() 
+  { 
+    return n; 
+  }
+
+  void join (minord<T> o) // Join doesnt change initial f value
+  {
+    n=min(n,o.n);
+  }
+};
+
