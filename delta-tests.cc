@@ -204,6 +204,62 @@ void test_maxord()
   cout << o5 << endl;
 }
 
+void example1()
+{
+  aworset<string> sx,sy;
+
+  // Node x
+  sx.add("x","apple");
+  sx.rmv("apple");
+  // Node y
+  sy.add("y","juice");
+  sy.add("y","apple");
+
+  // Join into one object and show it 
+  sx.join(sy);
+  cout << sx.read() << endl;
+}
+
+void example2()
+{
+  rworset<string> sx,sy;
+
+  // Node x
+  sx.add("x","apple");
+  sx.rmv("x","apple");
+  // Node y
+  sy.add("y","juice");
+  sy.add("y","apple");
+
+  // Join into one object and show it 
+  sx.join(sy);
+  cout << sx.read() << endl;
+}
+
+void example3()
+{
+  gset<int> sx;
+
+  // Node x does initial operations
+  sx.add(1); sx.add(4);
+
+  // Replicate full state in sy;
+  gset<int> sy=sx;
+
+  // Node y records operations in delta
+  gset<int> dy;
+  dy=sy.add(2);
+  dy.join(sy.add(3));  // Join delta to delta
+
+  cout << sy.read() << endl;  // ( 1 2 3 4 )
+
+  // Merge deltas ( 2 3 ) to node x
+  cout << dy.read() << endl;  // ( 2 3 )
+  cout << sx.read() << endl;  // ( 1 4 )
+  sx.join(dy);
+  cout << sx.read() << endl;  // ( 1 2 3 4 )
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -214,4 +270,8 @@ int main(int argc, char * argv[])
   test_rworset();
   test_mvreg();
   test_maxord();
+
+  example1();
+  example2();
+  example3();
 }

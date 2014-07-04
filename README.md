@@ -64,6 +64,41 @@ cout << sx.read() << endl;
 
 The output will be: `( juice )`
 
+Example with delta-mutations
+----------------------------
+
+The above example show how to operate with standard state-based CRDTs. One drawback is that we need to ship and join full states. It would be much better if we  
+could ship instead only the parts of the state that changed. We call these parts deltas. 
+
+In the next example, using a simple grow-only set of integers `gset<int>`, node
+`x` will create a replica and replicate it to node `y`. Afterwards we will do
+some new operations in `y`, collect the deltas and ship them back and merge
+them to `x` replica. 
+
+```cpp
+  gset<int> sx;
+
+  // Node x does initial operations
+  sx.add(1); sx.add(4);
+
+  // Replicate full state in sy;
+  gset<int> sy=sx;
+
+  // Node y records operations in delta 
+  gset<int> dy;
+  dy=sy.add(2);
+  dy.join(sy.add(3));  // Join delta to delta
+
+  cout << sy.read() << endl;  // ( 1 2 3 4 )
+
+  // Merge deltas ( 2 3 ) to node x
+  cout << dy.read() << endl;  // ( 2 3 )
+  cout << sx.read() << endl;  // ( 1 4 )
+  sx.join(dy);
+  cout << sx.read() << endl;  // ( 1 2 3 4 )
+```
+
+Have fun ...
 
 Additional information
 ----------------------
