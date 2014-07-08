@@ -275,6 +275,11 @@ int main(int argc, char * argv[])
   example2();
   example3();
 
-  pair<maxord<int>,maxord<int> > a, b;
-  join(a,b);
+  pair<maxord<int>,maxord<int> > a, b, c;
+  a.first.write(1);
+  a.second.write(0);
+  b.first.write(0);
+  b.second.write(1);
+  c=join(a,b);
+  cout << c << endl;
 }

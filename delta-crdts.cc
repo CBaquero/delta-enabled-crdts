@@ -78,8 +78,8 @@ pair<A,B> lexjoin(const pair<A,B>& l, const pair<A,B>& r)
   return res;
 }
 
-template<typename T>
-ostream &operator<<( ostream &output, const pair<T,bool>& o)
+template<typename A, typename B>
+ostream &operator<<( ostream &output, const pair<A,B>& o)
 {
   output << "(" << o.first << "," << o.second << ")";
   return output;
