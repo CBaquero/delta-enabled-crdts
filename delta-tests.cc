@@ -260,6 +260,19 @@ void example3()
   cout << sx.read() << endl;  // ( 1 2 3 4 )
 }
 
+void test_maxpairs()
+{
+  pair<maxord<int>,gset<int> > a, b, c, d;
+  a.first.write(1);
+  a.second.add(0);
+  b.first.write(0);
+  b.second.add(1);
+  c=join(a,b);
+  cout << c << endl;
+  d=lexjoin(a,b);
+  cout << d << endl;
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -270,16 +283,10 @@ int main(int argc, char * argv[])
   test_rworset();
   test_mvreg();
   test_maxord();
+  test_maxpairs();
 
   example1();
   example2();
   example3();
 
-  pair<maxord<int>,maxord<int> > a, b, c;
-  a.first.write(1);
-  a.second.write(0);
-  b.first.write(0);
-  b.second.write(1);
-  c=join(a,b);
-  cout << c << endl;
 }

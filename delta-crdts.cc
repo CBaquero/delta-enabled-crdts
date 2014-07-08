@@ -106,6 +106,8 @@ public:
 
   set<T> read () { return s; }
 
+  bool operator == ( const gset<T>& o ) const { return s==o.s; }
+
   bool in (const T& val) 
   { 
     if ( s.find(val) == s.end() )
@@ -145,6 +147,11 @@ private:
 public:
 
   twopset<T> read () { return s; }
+
+  bool operator == ( const twopset<T>& o ) const 
+  { 
+    return s==o.s && t==o.t; 
+  }
 
   bool in (const T& val) 
   { 
@@ -225,6 +232,11 @@ public:
       m.at(id)+=tosum;
     res.m.insert(pair<string,int>(id,m.at(id)));
     return res;
+  }
+
+  bool operator == ( const gcounter& o ) const 
+  { 
+    return m==o.m; 
   }
 
   int read() // get counter value
@@ -687,6 +699,13 @@ public:
 
   operator T& () { return n; }
 
+  bool operator == ( const maxord<T>& o ) const { return n==o.n; }
+  bool operator > ( const maxord<T>& o ) const { return n>o.n; }
+  bool operator < ( const maxord<T>& o ) const { return n<o.n; }
+  bool operator <= ( const maxord<T>& o ) const { return n<=o.n; }
+  bool operator >= ( const maxord<T>& o ) const { return n>=o.n; }
+  bool operator != ( const maxord<T>& o ) const { return n!=o.n; }
+
   maxord<T> write(const T& val)
   {
     maxord<T> r;
@@ -722,6 +741,13 @@ public:
   }
 
   operator T& () { return n; }
+
+  bool operator == ( const minord<T>& o ) const { return n==o.n; }
+  bool operator > ( const minord<T>& o ) const { return n>o.n; }
+  bool operator < ( const minord<T>& o ) const { return n<o.n; }
+  bool operator <= ( const minord<T>& o ) const { return n<=o.n; }
+  bool operator >= ( const minord<T>& o ) const { return n>=o.n; }
+  bool operator != ( const minord<T>& o ) const { return n!=o.n; }
 
   minord<T> write(const T& val)
   {
