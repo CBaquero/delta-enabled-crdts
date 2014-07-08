@@ -54,9 +54,9 @@ T join(const T& l, const T& r) // assuming copy constructor
 template<typename A, typename B>
 pair<A,B> join(const pair<A,B>& l, const pair<A,B>& r)
 {
-  pair<A,B> res=l;
-  res.first=res.first.join(r.first);
-  res.second=res.second.join(r.second);
+  pair<A,B> res;
+  res.first=join(r.first,l.first);
+  res.second=join(r.second,l.second);
   return res;
 }
 
@@ -672,13 +672,12 @@ public:
 };
 
 template<typename T>
-class maxord // Keeps the max value in some total order 
+class maxord // Keeps the max value in some total order that starts at 0
 {
 private:
-  T n,f; 
+  T n=0; 
 
 public:
-  maxord(T i) : n(i), f(i) { }
 
   friend ostream &operator<<( ostream &output, const maxord<T>& o)
   { 
@@ -690,31 +689,31 @@ public:
 
   maxord<T> write(const T& val)
   {
-    maxord<T> r(f);
+    maxord<T> r;
     n=max(n,val);
     r.n=val;
     return r;
   }
 
-  maxord<T> read() 
+  T read() 
   { 
     return n; 
   }
 
-  void join (maxord<T> o) // Join doesnt change initial f value
+  void join (maxord<T> o) 
   {
     n=max(n,o.n);
   }
 };
 
+
 template<typename T>
-class minord // Keeps the max value in some total order 
+class minord // Keeps the max value in some total order thats starts at 0
 {
 private:
-  T n,f; 
+  T n; 
 
 public:
-  minord(T i) : n(i), f(i) { }
 
   friend ostream &operator<<( ostream &output, const minord<T>& o)
   { 
@@ -726,13 +725,13 @@ public:
 
   minord<T> write(const T& val)
   {
-    minord<T> r(f);
+    minord<T> r;
     n=min(n,val);
     r.n=val;
     return r;
   }
 
-  minord<T> read() 
+  T read() 
   { 
     return n; 
   }

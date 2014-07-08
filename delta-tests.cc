@@ -185,7 +185,7 @@ void test_mvreg()
 
 void test_maxord()
 {
-  maxord<int> o1(0),o2(0),do1(0),do2(0);
+  maxord<int> o1,o2,do1,do2;
   do1.join(o1.write(6)); 
   do1.join(o1.write(3)); 
 
@@ -197,7 +197,7 @@ void test_maxord()
   cout << o3 << endl;
   cout << o4 << endl;
 
-  maxord<bool> o5(false);
+  maxord<bool> o5;
   cout << o5 << endl;
   o5.write(true);
   o5.write(false); // Once it goes up, it cant go back
@@ -275,9 +275,6 @@ int main(int argc, char * argv[])
   example2();
   example3();
 
-  maxord<int> a(1);
-  cout << a+1 << endl;
-//  pair<int,int> a(0,1);
-//  pair<int,int> b(1,0);
-//  a=join(a,b);
+  pair<maxord<int>,maxord<int> > a, b;
+  join(a,b);
 }
