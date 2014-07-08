@@ -686,6 +686,8 @@ public:
     return output;            
   }
 
+  operator T& () { return n; }
+
   maxord<T> write(const T& val)
   {
     maxord<T> r(f);
@@ -719,6 +721,8 @@ public:
     output << "MinOrder: " << o.n;
     return output;            
   }
+
+  operator T& () { return n; }
 
   minord<T> write(const T& val)
   {

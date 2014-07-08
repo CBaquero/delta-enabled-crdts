@@ -275,6 +275,8 @@ int main(int argc, char * argv[])
   example2();
   example3();
 
+  maxord<int> a(1);
+  cout << a+1 << endl;
 //  pair<int,int> a(0,1);
 //  pair<int,int> b(1,0);
 //  a=join(a,b);
