@@ -42,6 +42,42 @@ T join(const T& l, const T& r) // assuming copy constructor
   return res;
 }
 
+//template<typename A, typename B>
+//pair<A,B> pair<A,B>::join(const pair<A,B>& o)
+//{
+//  pair<A,B> res;
+//  res.first=res.first.join(o.first);
+//  res.second=res.second.join(o.second);
+//  return res;
+//}
+
+template<typename A, typename B>
+pair<A,B> join(const pair<A,B>& l, const pair<A,B>& r)
+{
+  pair<A,B> res=l;
+  res.first=res.first.join(r.first);
+  res.second=res.second.join(r.second);
+  return res;
+}
+
+template<typename A, typename B>
+pair<A,B> lexjoin(const pair<A,B>& l, const pair<A,B>& r)
+{
+  pair<A,B> res;
+  if (r==l) return res=r;
+  if (l.first > r.first) return res=l;
+  if (r.first > l.first) return res=r;
+  // Left is equal, so join right
+  if (r.first == l.first)
+  {
+    res.first=r.first;
+    res.second=join(r.second,l.second);
+    return res;
+  }
+  // Otherwise A is not a total order so keep res empty to signal error
+  return res;
+}
+
 template<typename T>
 ostream &operator<<( ostream &output, const pair<T,bool>& o)
 {
@@ -163,6 +199,16 @@ public:
         s.insert(*soit); 
   }
 };
+
+template<typename T, typename U>
+class lwwset
+{
+private:
+  map<T,U> s;
+
+public:
+};
+
 
 class gcounter
 {

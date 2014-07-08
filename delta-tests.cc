@@ -274,4 +274,8 @@ int main(int argc, char * argv[])
   example1();
   example2();
   example3();
+
+//  pair<int,int> a(0,1);
+//  pair<int,int> b(1,0);
+//  a=join(a,b);
 }
