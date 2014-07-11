@@ -144,6 +144,26 @@ void test_aworset()
   cout << o5 << endl;
 }
 
+void test_rworset()
+{
+  rworset<char> o1,o2,do1,do2;
+
+  do1.join(o1.add("idx",'a')); 
+  do1.join(o1.add("idx",'b')); 
+
+  do2.join(o2.add("idy",'b')); 
+  do2.join(o2.add("idy",'c')); 
+  do2.join(o2.rmv("idy",'b')); 
+
+  rworset<char> o3 = join(o1,o2);
+  rworset<char> o4 = join(join(o1,do1),join(o2,do1));
+  cout << o3 << endl;
+  cout << o4 << endl;
+
+  cout << o4.read() << endl;
+  cout << o3.in('a') << o3.in('b') << endl;
+}
+
 void test_mvreg()
 {
   mvreg<string> o1,o2,do1,do2;
@@ -165,10 +185,92 @@ void test_mvreg()
 
 void test_maxord()
 {
-  maxord<bool> o1(true);
-  cout << o1 << endl;
-  o1.write(false);
-  cout << o1 << endl;
+  maxord<int> o1,o2,do1,do2;
+  do1.join(o1.write(6)); 
+  do1.join(o1.write(3)); 
+
+  do2.join(o2.write(5)); 
+  do2.join(o2.write(10)); 
+
+  maxord<int> o3 = join(o1,o2);
+  maxord<int> o4 = join(join(o1,do1),join(o2,do1));
+  cout << o3 << endl;
+  cout << o4 << endl;
+
+  maxord<bool> o5;
+  cout << o5 << endl;
+  o5.write(true);
+  o5.write(false); // Once it goes up, it cant go back
+  cout << o5 << endl;
+}
+
+void example1()
+{
+  aworset<string> sx,sy;
+
+  // Node x
+  sx.add("x","apple");
+  sx.rmv("apple");
+  // Node y
+  sy.add("y","juice");
+  sy.add("y","apple");
+
+  // Join into one object and show it 
+  sx.join(sy);
+  cout << sx.read() << endl;
+}
+
+void example2()
+{
+  rworset<string> sx,sy;
+
+  // Node x
+  sx.add("x","apple");
+  sx.rmv("x","apple");
+  // Node y
+  sy.add("y","juice");
+  sy.add("y","apple");
+
+  // Join into one object and show it 
+  sx.join(sy);
+  cout << sx.read() << endl;
+}
+
+void example3()
+{
+  gset<int> sx;
+
+  // Node x does initial operations
+  sx.add(1); sx.add(4);
+
+  // Replicate full state in sy;
+  gset<int> sy=sx;
+
+  // Node y records operations in delta
+  gset<int> dy;
+  dy=sy.add(2);
+  dy.join(sy.add(3));  // Join delta to delta
+
+  cout << sy.read() << endl;  // ( 1 2 3 4 )
+
+  // Merge deltas ( 2 3 ) to node x
+  cout << dy.read() << endl;  // ( 2 3 )
+  cout << sx.read() << endl;  // ( 1 4 )
+  sx.join(dy);
+  cout << sx.read() << endl;  // ( 1 2 3 4 )
+}
+
+void test_maxpairs()
+{
+  pair<maxord<int>,gset<int> > a, b, c, d;
+  a.first.write(1);
+  a.second.add(0);
+  b.first.write(0);
+  b.second.add(1);
+  c=join(a,b);
+  cout << c << endl;
+  d=lexjoin(a,b);
+  cout << d << endl;
 }
 
 int main(int argc, char * argv[])
@@ -178,6 +280,13 @@ int main(int argc, char * argv[])
   test_gcounter();
   test_pncounter();
   test_aworset();
+  test_rworset();
   test_mvreg();
   test_maxord();
+  test_maxpairs();
+
+  example1();
+  example2();
+  example3();
+
 }
