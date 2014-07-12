@@ -51,6 +51,11 @@ T join(const T& l, const T& r) // assuming copy constructor
 //  return res;
 //}
 
+//string join(const string & a, const string & b)
+//{
+//  return a;
+//}
+
 template<typename A, typename B>
 pair<A,B> join(const pair<A,B>& l, const pair<A,B>& r)
 {
@@ -206,16 +211,6 @@ public:
         s.insert(*soit); 
   }
 };
-
-template<typename T, typename U>
-class lwwset
-{
-private:
-  map<T,U> s;
-
-public:
-};
-
 
 class gcounter
 {
@@ -767,4 +762,46 @@ public:
     n=min(n,o.n);
   }
 };
+
+template<typename T, typename U>
+class lwwset
+{
+private:
+  map<T,pair<maxord<U>, maxord<bool> > > s;
+
+public:
+};
+
+template<typename U, typename T>
+class lwwreg
+{
+private:
+  pair<U, T> r;
+
+public:
+
+  friend ostream &operator<<( ostream &output, const lwwreg<U,T>& o)
+  { 
+    output << "LWWReg: " << o.r;
+    return output;            
+  }
+
+  void join (lwwreg<U,T> o)
+  {
+    if (o.r.first > r.first)
+    {
+      r=o.r;
+    }
+  }
+
+  lwwreg<U,T> write (const U& ts, const T& val)
+  {
+    lwwreg<U,T> res;
+    res.r.first=ts;
+    res.r.second=val;
+    join(res);  // Will only update if ts is greater
+    return res;
+  }
+};
+
 

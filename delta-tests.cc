@@ -271,6 +271,7 @@ void test_maxpairs()
   cout << c << endl;
   d=lexjoin(a,b);
   cout << d << endl;
+  pair<maxord<float>,twopset<char> > e;
 }
 
 int main(int argc, char * argv[])
@@ -289,4 +290,15 @@ int main(int argc, char * argv[])
   example2();
   example3();
 
+  lwwset<string,int> l;
+
+  lwwreg<int,string> r;
+
+  r.write(1,"Hello");
+  r.write(0,"My");
+  r.write(3,"World");
+
+  cout << r << endl;
+  cout << r.write(2,"a") << endl;
+  cout << r << endl;
 }
