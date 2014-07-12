@@ -300,5 +300,5 @@ int main(int argc, char * argv[])
 
   cout << r << endl;
   cout << r.write(2,"a") << endl;
-  cout << r << endl;
+  cout << r.read() << endl;
 }

@@ -773,7 +773,7 @@ public:
 };
 
 template<typename U, typename T>
-class lwwreg
+class lwwreg  
 {
 private:
   pair<U, T> r;
@@ -801,6 +801,11 @@ public:
     res.r.second=val;
     join(res);  // Will only update if ts is greater
     return res;
+  }
+
+  T read()
+  {
+    return r.second;
   }
 };
 
