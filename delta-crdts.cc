@@ -786,7 +786,7 @@ public:
     return output;            
   }
 
-  void join (lwwreg<U,T> o)
+  void join (const lwwreg<U,T>& o)
   {
     if (o.r.first > r.first)
     {
