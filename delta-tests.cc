@@ -301,4 +301,9 @@ int main(int argc, char * argv[])
   cout << r << endl;
   cout << r.write(2,"a") << endl;
   cout << r.read() << endl;
+
+  lwwset<int,string> s;
+  s.add(1,"a");
+  s.add(1,"b");
+  s.add(2,"b");
 }

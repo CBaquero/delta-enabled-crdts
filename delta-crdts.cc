@@ -763,13 +763,28 @@ public:
   }
 };
 
-template<typename T, typename U>
-class lwwset
+template<typename U, typename T>
+class lwwset // remove wins bias for same timestamps
 {
 private:
   map<T,pair<maxord<U>, maxord<bool> > > s;
 
 public:
+  lwwset<U,T> add(const U& ts, const T& val)
+  {
+    lwwset<U,T> res;
+    pair<maxord<U>, maxord<bool> > a;
+    a.first.write(ts);
+    a.second.write(false); // false means its in
+    res.s.insert(pair<T,pair<maxord<U>, maxord<bool> > >(val,a));
+    pair<typename map<T,pair<maxord<U>, maxord<bool> > >::iterator,bool> ret;
+    ret=s.insert(pair<T,pair<maxord<U>, maxord<bool> > >(val,a));
+    if (ret.second == false ) // some value there
+    {
+        s.at(ret.first->first)=lexjoin(ret.first->second,a);
+    }
+    return res;
+  }
 };
 
 template<typename U, typename T>
