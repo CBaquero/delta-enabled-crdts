@@ -785,6 +785,11 @@ public:
     }
     return res;
   }
+
+  void join (const lwwset<U,T>& o)
+  {
+  }
+
 };
 
 template<typename U, typename T>
