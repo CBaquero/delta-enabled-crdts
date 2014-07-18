@@ -27,6 +27,7 @@
 //
 //-------------------------------------------------------------------
 
+#include <ctime>
 #include <set>
 #include <map>
 #include <string>
@@ -274,6 +275,25 @@ void test_maxpairs()
   pair<maxord<float>,twopset<char> > e;
 }
 
+void benchmark1()
+{
+  aworset<int> g;
+
+  const long double TimeBefore = time(0);
+
+  for(int i=1; i < 100000; i++) // 100k
+  {
+    g.add("id",i);
+  }
+
+  cout << g.in(0) << endl;
+  cout << g.in(10) << endl;
+
+  const long double TimeAfter = time(0);
+
+  cout << "ELapsed System Time in seconds is " << TimeAfter-TimeBefore << "." << endl;
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -289,6 +309,8 @@ int main(int argc, char * argv[])
   example1();
   example2();
   example3();
+
+  benchmark1();
 
   lwwset<string,int> l;
 
