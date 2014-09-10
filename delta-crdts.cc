@@ -720,9 +720,9 @@ public:
   }
 };
 
-
+/* 
 template<typename T>
-class minord // Keeps the max value in some total order thats starts at 0
+class minord // Keeps the max value in some total order thats starts at ?
 {
 private:
   T n; 
@@ -757,11 +757,12 @@ public:
     return n; 
   }
 
-  void join (minord<T> o) // Join doesnt change initial f value
+  void join (minord<T> o) 
   {
     n=min(n,o.n);
   }
 };
+*/
 
 template<typename U, typename T>
 class lwwset // remove wins bias for same timestamps

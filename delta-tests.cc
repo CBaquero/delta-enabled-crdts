@@ -275,6 +275,28 @@ void test_maxpairs()
   pair<maxord<float>,twopset<char> > e;
 }
 
+void test_lwwreg()
+{
+  lwwreg<int,string> r;
+
+  r.write(1,"Hello");
+  r.write(0,"My"); 
+  r.write(3,"World");
+
+  cout << r << endl;
+  cout << r.write(2,"a") << endl;
+  cout << r.read() << endl;
+
+}
+
+void test_lwwset()
+{
+  lwwset<int,string> s;
+  s.add(1,"a");
+  s.add(1,"b");
+  s.add(2,"b");
+}
+
 void benchmark1()
 {
   aworset<int> g;
@@ -291,7 +313,7 @@ void benchmark1()
 
   const long double TimeAfter = time(0);
 
-  cout << "ELapsed System Time in seconds is " << TimeAfter-TimeBefore << "." << endl;
+  cout << "Elapsed System Time in Seconds is " << TimeAfter-TimeBefore << "." << endl;
 }
 
 int main(int argc, char * argv[])
@@ -305,27 +327,14 @@ int main(int argc, char * argv[])
   test_mvreg();
   test_maxord();
   test_maxpairs();
+  test_lwwreg();
+  test_lwwset();
 
   example1();
   example2();
   example3();
 
-  benchmark1();
+  // benchmark1();
 
-  lwwset<string,int> l;
 
-  lwwreg<int,string> r;
-
-  r.write(1,"Hello");
-  r.write(0,"My");
-  r.write(3,"World");
-
-  cout << r << endl;
-  cout << r.write(2,"a") << endl;
-  cout << r.read() << endl;
-
-  lwwset<int,string> s;
-  s.add(1,"a");
-  s.add(1,"b");
-  s.add(2,"b");
 }
