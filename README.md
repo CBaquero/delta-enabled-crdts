@@ -16,7 +16,8 @@ Current datatypes are:
   * RWORSet: A remove-wins optimized observed-remove set that allows adds and removes
   * MVRegister: An optimized multi-value register (new unpublished datatype)
   * MaxOrder: Keeps the maximum value in an ordered payload type
-  * MinOrder: Keeps the minimum value in an ordered payload type
+  * LWWSet: Last-writer-wins set with remove wins bias 
+  * LWWReg: Last-writer-wins register
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
