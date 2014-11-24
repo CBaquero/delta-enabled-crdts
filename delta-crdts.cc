@@ -792,7 +792,7 @@ public:
   { 
     maxord<bool> t;
     t.write(false);
-    output << "LWWSet: ( ";
+    output << "RW LWWSet: ( ";
     for(typename  map<T,pair<maxord<U>, maxord<bool> >>::const_iterator it=o.s.begin(); it != o.s.end(); ++it)
     {
       if( it->second.second == t)
@@ -869,7 +869,7 @@ public:
 
   friend ostream &operator<<( ostream &output, const lwwreg<U,T>& o)
   { 
-    output << "RWLWWReg: " << o.r;
+    output << "LWWReg: " << o.r;
     return output;            
   }
 
