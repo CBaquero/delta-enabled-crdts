@@ -295,8 +295,13 @@ void test_lwwset()
   s.add(1,"a");
   s.add(1,"b");
   s.add(2,"b");
-  s.rmv(2,"b");
   cout << s.in("b") << endl;
+  lwwset<int,string> t;
+  t.rmv(2,"b");
+  t.add(1,"c");
+  s.join(t);
+  cout << s.in("b") << endl;
+  cout << s << endl;
 }
 
 void benchmark1()

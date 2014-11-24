@@ -787,6 +787,21 @@ private:
   }
 
 public:
+
+  friend ostream &operator<<( ostream &output, const lwwset<U,T>& o)
+  { 
+    maxord<bool> t;
+    t.write(false);
+    output << "LWWSet: ( ";
+    for(typename  map<T,pair<maxord<U>, maxord<bool> >>::const_iterator it=o.s.begin(); it != o.s.end(); ++it)
+    {
+      if( it->second.second == t)
+        output << it->first << " ";
+    }
+    output << ")" << endl;
+    return output;            
+  }
+
   lwwset<U,T> add(const U& ts, const T& val)
   {
     return addrmv(ts,val,false);
@@ -809,9 +824,38 @@ public:
       return true;
   }
 
-  void join (const lwwset<U,T>& o)
+  void join (const lwwset<U,T> & o)
   {
+    if (this == &o) return; // Join is idempotent, but just dont do it.
+    // will iterate over the two sorted sets to compute join
+    typename  map<T,pair<maxord<U>, maxord<bool> >>::iterator it; 
+    typename  map<T,pair<maxord<U>, maxord<bool> >>::const_iterator ito; 
+    it=s.begin(); ito=o.s.begin();
+    do 
+    {
+      if ( it != s.end() && ( ito == o.s.end() || it->first < ito->first))
+      {
+        // entry only at this
+        // keep it
+        ++it;
+      }
+      else if ( ito != o.s.end() && ( it == s.end() || ito->first < it->first))
+      {
+        // entry only at other
+        // import it
+        s.insert(*ito);
+        ++ito;
+      }
+      else if ( it != s.end() && ito != o.s.end() )
+      {
+        // in both
+        // merge values by lex operator
+        s.at(it->first)=lexjoin(it->second,ito->second);
+        ++it; ++ito;
+      }
+    } while (it != s.end() || ito != o.s.end() );
   }
+
 
 };
 
