@@ -289,14 +289,14 @@ void test_lwwreg()
 
 }
 
-void test_lwwset()
+void test_rwlwwset()
 {
-  lwwset<int,string> s;
+  rwlwwset<int,string> s;
   s.add(1,"a");
   s.add(1,"b");
   s.add(2,"b");
   cout << s.in("b") << endl;
-  lwwset<int,string> t;
+  rwlwwset<int,string> t;
   t.rmv(2,"b");
   t.add(1,"c");
   s.join(t);
@@ -335,7 +335,7 @@ int main(int argc, char * argv[])
   test_maxord();
   test_maxpairs();
   test_lwwreg();
-  test_lwwset();
+  test_rwlwwset();
 
   example1();
   example2();

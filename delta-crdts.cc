@@ -765,14 +765,14 @@ public:
 */
 
 template<typename U, typename T>
-class lwwset // remove wins bias for identical timestamps
+class rwlwwset // remove wins bias for identical timestamps
 {
 private:
   map<T,pair<maxord<U>, maxord<bool> > > s;
 
-  lwwset<U,T> addrmv(const U& ts, const T& val, bool b)
+  rwlwwset<U,T> addrmv(const U& ts, const T& val, bool b)
   {
-    lwwset<U,T> res;
+    rwlwwset<U,T> res;
     pair<maxord<U>, maxord<bool> > a;
     a.first.write(ts);
     a.second.write(b); // false means its in
@@ -788,7 +788,7 @@ private:
 
 public:
 
-  friend ostream &operator<<( ostream &output, const lwwset<U,T>& o)
+  friend ostream &operator<<( ostream &output, const rwlwwset<U,T>& o)
   { 
     maxord<bool> t;
     t.write(false);
@@ -802,12 +802,12 @@ public:
     return output;            
   }
 
-  lwwset<U,T> add(const U& ts, const T& val)
+  rwlwwset<U,T> add(const U& ts, const T& val)
   {
     return addrmv(ts,val,false);
   }
 
-  lwwset<U,T> rmv(const U& ts, const T& val)
+  rwlwwset<U,T> rmv(const U& ts, const T& val)
   {
     return addrmv(ts,val,true);
   }
@@ -824,7 +824,7 @@ public:
       return true;
   }
 
-  void join (const lwwset<U,T> & o)
+  void join (const rwlwwset<U,T> & o)
   {
     if (this == &o) return; // Join is idempotent, but just dont do it.
     // will iterate over the two sorted sets to compute join
@@ -869,7 +869,7 @@ public:
 
   friend ostream &operator<<( ostream &output, const lwwreg<U,T>& o)
   { 
-    output << "LWWReg: " << o.r;
+    output << "RWLWWReg: " << o.r;
     return output;            
   }
 
