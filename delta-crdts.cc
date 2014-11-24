@@ -705,11 +705,11 @@ public:
   {
     maxord<T> r;
     n=max(n,val);
-    r.n=val;
+    r.n=val; // not sure if return value shouldnt be max for delta
     return r;
   }
 
-  T read() 
+  const T read() 
   { 
     return n; 
   }
@@ -765,18 +765,17 @@ public:
 */
 
 template<typename U, typename T>
-class lwwset // remove wins bias for same timestamps
+class lwwset // remove wins bias for identical timestamps
 {
 private:
   map<T,pair<maxord<U>, maxord<bool> > > s;
 
-public:
-  lwwset<U,T> add(const U& ts, const T& val)
+  lwwset<U,T> addrmv(const U& ts, const T& val, bool b)
   {
     lwwset<U,T> res;
     pair<maxord<U>, maxord<bool> > a;
     a.first.write(ts);
-    a.second.write(false); // false means its in
+    a.second.write(b); // false means its in
     res.s.insert(pair<T,pair<maxord<U>, maxord<bool> > >(val,a));
     pair<typename map<T,pair<maxord<U>, maxord<bool> > >::iterator,bool> ret;
     ret=s.insert(pair<T,pair<maxord<U>, maxord<bool> > >(val,a));
@@ -787,6 +786,29 @@ public:
     return res;
   }
 
+public:
+  lwwset<U,T> add(const U& ts, const T& val)
+  {
+    return addrmv(ts,val,false);
+  }
+
+  lwwset<U,T> rmv(const U& ts, const T& val)
+  {
+    return addrmv(ts,val,true);
+  }
+
+
+  bool in (const T& val) 
+  { 
+    maxord<bool> t;
+    t.write(true);
+    typename  map<T,pair<maxord<U>, maxord<bool> >>::const_iterator it=s.find(val); 
+    if ( it == s.end() || it->second.second == t)
+      return false;
+    else
+      return true;
+  }
+
   void join (const lwwset<U,T>& o)
   {
   }
@@ -794,7 +816,7 @@ public:
 };
 
 template<typename U, typename T>
-class lwwreg  
+class lwwreg // U must be comparable 
 {
 private:
   pair<U, T> r;
