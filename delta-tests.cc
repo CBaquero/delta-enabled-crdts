@@ -304,6 +304,26 @@ void test_rwlwwset()
   cout << s << endl;
 }
 
+void test_ewflag()
+{
+  ewflag o1,o2,do1,do2;
+
+  do1.join(o1.enable("idx")); 
+
+  do2.join(o2.enable("idy")); 
+  do2.join(o2.enable("idy")); // re-enable is fine
+
+  ewflag o3 = join(o1,o2);
+  ewflag o4 = join(join(o1,do1),join(o2,do1));
+  cout << o3 << endl;
+  cout << o4 << endl;
+  cout << o4.read() << endl;
+  o3.disable();
+  o4.join(o3);
+  cout << o4 << endl;
+  cout << o4.read() << endl;
+}
+
 void benchmark1()
 {
   aworset<int> g;
@@ -336,6 +356,7 @@ int main(int argc, char * argv[])
   test_maxpairs();
   test_lwwreg();
   test_rwlwwset();
+  test_ewflag();
 
   example1();
   example2();

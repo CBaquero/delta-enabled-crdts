@@ -678,6 +678,53 @@ public:
   }
 };
 
+
+class ewflag    // Enable-Wins Flag
+{
+private:
+  // To re-use the kernel there is an artificial need for dot-tagged payload
+  dotkernel<bool> dk; // Dot kernel
+
+public:
+  friend ostream &operator<<( ostream &output, const ewflag& o)
+  { 
+    output << "EWFlag:" << o.dk;
+    return output;            
+  }
+
+  bool read ()
+  {
+    typename map<pair<string,int>,bool>::iterator dsit;
+    if ( dk.ds.begin() == dk.ds.end()) 
+      // No active dots
+      return false;
+    else
+      // Some dots
+      return true;
+  }
+
+  ewflag enable (string id) 
+  {
+    ewflag r;
+    r.dk=dk.rmv(true); // optimization that first deletes active dots
+    r.dk.join(dk.add(id,true));
+    return r;
+  }
+
+  ewflag disable ()
+  {
+    ewflag r;
+    r.dk=dk.rmv(true); 
+    return r;
+  }
+
+  void join (ewflag o)
+  {
+    dk.join(o.dk);
+  }
+};
+
+
 template<typename T>
 class maxord // Keeps the max value in some total order that starts at 0
 {
