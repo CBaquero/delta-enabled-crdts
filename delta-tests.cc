@@ -324,6 +324,26 @@ void test_ewflag()
   cout << o4.read() << endl;
 }
 
+void test_dwflag()
+{
+  dwflag o1,o2,do1,do2;
+
+  do1.join(o1.disable("idx")); 
+
+  do2.join(o2.disable("idy")); 
+  do2.join(o2.disable("idy")); // re-disable is fine
+
+  dwflag o3 = join(o1,o2);
+  dwflag o4 = join(join(o1,do1),join(o2,do1));
+  cout << o3 << endl;
+  cout << o4 << endl;
+  cout << o4.read() << endl;
+  o3.enable();
+  o4.join(o3);
+  cout << o4 << endl;
+  cout << o4.read() << endl;
+}
+
 void benchmark1()
 {
   aworset<int> g;
@@ -357,6 +377,7 @@ int main(int argc, char * argv[])
   test_lwwreg();
   test_rwlwwset();
   test_ewflag();
+  test_dwflag();
 
   example1();
   example2();

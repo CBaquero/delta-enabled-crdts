@@ -682,7 +682,7 @@ public:
 class ewflag    // Enable-Wins Flag
 {
 private:
-  // To re-use the kernel there is an artificial need for dot-tagged payload
+  // To re-use the kernel there is an artificial need for dot-tagged bool payload
   dotkernel<bool> dk; // Dot kernel
 
 public:
@@ -719,6 +719,51 @@ public:
   }
 
   void join (ewflag o)
+  {
+    dk.join(o.dk);
+  }
+};
+
+class dwflag    // Disable-Wins Flag
+{
+private:
+  // To re-use the kernel there is an artificial need for dot-tagged bool payload
+  dotkernel<bool> dk; // Dot kernel
+
+public:
+  friend ostream &operator<<( ostream &output, const dwflag& o)
+  { 
+    output << "DWFlag:" << o.dk;
+    return output;            
+  }
+
+  bool read ()
+  {
+    typename map<pair<string,int>,bool>::iterator dsit;
+    if ( dk.ds.begin() == dk.ds.end()) 
+      // No active dots
+      return true;
+    else
+      // Some dots
+      return false;
+  }
+
+  dwflag disable (string id) 
+  {
+    dwflag r;
+    r.dk=dk.rmv(false); // optimization that first deletes active dots
+    r.dk.join(dk.add(id,false));
+    return r;
+  }
+
+  dwflag enable ()
+  {
+    dwflag r;
+    r.dk=dk.rmv(false); 
+    return r;
+  }
+
+  void join (dwflag o)
   {
     dk.join(o.dk);
   }
