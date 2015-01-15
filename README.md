@@ -114,7 +114,7 @@ For more information on CRDTs and the newer concept of delta mutation consider c
 http://hal.inria.fr/docs/00/55/55/88/PDF/techreport.pdf
 
   2. Efficient State-based CRDTs by Delta-Mutation
-http://gsd.di.uminho.pt/members/cbm/ps/delta-crdt-draft16may2014.pdf
+http://arxiv.org/pdf/1410.2803v1.pdf
 
   3. Conflict-free Replicated Data Types
 http://gsd.di.uminho.pt/members/cbm/members/cbm/ps/sss2011.pdf
