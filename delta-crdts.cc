@@ -34,7 +34,7 @@
 
 using namespace std;
 
-template<typename T>
+template<typename T> // Join two objects, deriving a new one
 T join(const T& l, const T& r) // assuming copy constructor
 {
   T res=l;
@@ -42,21 +42,7 @@ T join(const T& l, const T& r) // assuming copy constructor
   return res;
 }
 
-//template<typename A, typename B>
-//pair<A,B> pair<A,B>::join(const pair<A,B>& o)
-//{
-//  pair<A,B> res;
-//  res.first=res.first.join(o.first);
-//  res.second=res.second.join(o.second);
-//  return res;
-//}
-
-//string join(const string & a, const string & b)
-//{
-//  return a;
-//}
-
-template<typename A, typename B>
+template<typename A, typename B> // Join two pairs of objects
 pair<A,B> join(const pair<A,B>& l, const pair<A,B>& r)
 {
   pair<A,B> res;
@@ -65,7 +51,7 @@ pair<A,B> join(const pair<A,B>& l, const pair<A,B>& r)
   return res;
 }
 
-template<typename A, typename B>
+template<typename A, typename B> // Join lexicographic of two pairs of objects
 pair<A,B> lexjoin(const pair<A,B>& l, const pair<A,B>& r)
 {
   pair<A,B> res;
@@ -83,14 +69,14 @@ pair<A,B> lexjoin(const pair<A,B>& l, const pair<A,B>& r)
   return res;
 }
 
-template<typename A, typename B>
+template<typename A, typename B> // Output a pair
 ostream &operator<<( ostream &output, const pair<A,B>& o)
 {
   output << "(" << o.first << "," << o.second << ")";
   return output;
 }
 
-template<typename T>
+template<typename T> // Output a set
 ostream &operator<<( ostream &output, const set<T>& o)
 {
   typename set<T>::iterator it;
@@ -212,40 +198,41 @@ public:
   }
 };
 
+template <typename K=string, typename V=int>
 class gcounter
 {
 private:
-  map<string,int> m;
+  map<K,V> m;
 
 public:
-  gcounter inc(string id, int tosum=1) // 2nd argument is optional
+  gcounter inc(K id, V tosum=1) // 2nd argument is optional
   {
-    gcounter res;
-    pair<map<string,int>::iterator,bool> ret;
-    ret=m.insert(pair<string,int>(id,tosum));
+    gcounter<K,V> res;
+    pair<typename map<K,V>::iterator,bool> ret;
+    ret=m.insert(pair<K,V>(id,tosum));
     if (ret.second==false) // already there, so update it
       m.at(id)+=tosum;
-    res.m.insert(pair<string,int>(id,m.at(id)));
+    res.m.insert(pair<K,V>(id,m.at(id)));
     return res;
   }
 
-  bool operator == ( const gcounter& o ) const 
+  bool operator == ( const gcounter<K,V>& o ) const 
   { 
     return m==o.m; 
   }
 
-  int read() // get counter value
+  V read() // get counter value
   {
-    int res=0;
-    map<string,int>::iterator mit;
+    V res=0;
+    typename map<K,V>::iterator mit;
     for(mit=m.begin(); mit!=m.end(); ++mit) res+=mit->second;
     return res;
   }
 
-  void join(const gcounter& o)
+  void join(const gcounter<K,V>& o)
   {
-    map<string,int>::const_iterator it;
-    pair<map<string,int>::const_iterator,bool> ret;
+    typename map<K,V>::const_iterator it;
+    pair<typename map<K,V>::const_iterator,bool> ret;
     for (it=o.m.begin(); it!=o.m.end(); ++it)
     {
       ret=m.insert(*it);
@@ -255,9 +242,9 @@ public:
 
   }
 
-  friend ostream &operator<<( ostream &output, const gcounter& o)
+  friend ostream &operator<<( ostream &output, const gcounter<K,V>& o)
   { 
-    map<string,int>::const_iterator it;
+    typename map<K,V>::const_iterator it;
     output << "GCounter: ( ";
     for (it=o.m.begin(); it!=o.m.end(); ++it)
       output << it->first << "->" << it->second << " ";
@@ -267,30 +254,31 @@ public:
 
 };
 
+template <typename K=string, typename V=int>
 class pncounter
 {
 private:
-  gcounter p,n;
+  gcounter<K,V> p,n;
 
 public:
-  pncounter inc(string id, int tosum=1) // 2nd argument is optional
+  pncounter inc(K id, V tosum=1) // 2nd argument is optional
   {
-    pncounter res;
+    pncounter<K,V> res;
     res.p = p.inc(id,tosum); 
     return res;
   }
 
-  pncounter dec(string id, int tosum=1) // 2nd argument is optional
+  pncounter dec(K id, V tosum=1) // 2nd argument is optional
   {
-    pncounter res;
+    pncounter<K,V> res;
     res.n = n.inc(id,tosum); 
     return res;
   }
 
 
-  int read() // get counter value
+  V read() // get counter value
   {
-    int res=p.read()-n.read();
+    V res=p.read()-n.read();
     return res;
   }
 
@@ -300,7 +288,7 @@ public:
     n.join(o.n);
   }
 
-  friend ostream &operator<<( ostream &output, const pncounter& o)
+  friend ostream &operator<<( ostream &output, const pncounter<K,V>& o)
   { 
     output << "PNCounter:P:" << o.p << " PNCounter:N:" << o.n;
     return output;            

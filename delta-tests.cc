@@ -86,7 +86,8 @@ void test_twopset()
 
 void test_gcounter()
 {
-  gcounter o1,o2,do1,do2;
+  // default template type is string key and int value
+  gcounter<> o1,o2,do1,do2;
 
   do1.join(o1.inc("idx"));
   do1.join(o1.inc("idx",4));
@@ -94,31 +95,34 @@ void test_gcounter()
   do2.join(o2.inc("idy"));
   do2.join(o2.inc("idy"));
 
-  gcounter o3 = join(o1,o2);
-  gcounter o4 = join(join(o1,do1),join(o2,do1));
+  gcounter<> o3 = join(o1,o2);
+  gcounter<> o4 = join(join(o1,do1),join(o2,do1));
 
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.read() << endl;
 }
+
 
 void test_pncounter()
 {
-  pncounter o1,o2,do1,do2;
+  // counter with ints in keys and floats in values
+  pncounter<int,float> o1,o2,do1,do2;
 
-  do1.join(o1.inc("idx",3));
-  do1.join(o1.dec("idx"));
+  do1.join(o1.inc(2,3.5));
+  do1.join(o1.dec(2));
 
-  do2.join(o2.inc("idy"));
-  do2.join(o2.inc("idy"));
+  do2.join(o2.inc(5));
+  do2.join(o2.inc(5));
 
-  pncounter o3 = join(o1,o2);
-  pncounter o4 = join(join(o1,do1),join(o2,do1));
+  pncounter<int,float> o3 = join(o1,o2);
+  pncounter<int,float> o4 = join(join(o1,do1),join(o2,do1));
 
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.read() << endl;
 }
+
 
 
 void test_aworset()
