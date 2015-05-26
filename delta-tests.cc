@@ -51,6 +51,8 @@ void test_gset()
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.in(1) << o3.in(0) << endl;
+  o3.read().erase(1);
+  cout << o3.in(1) << o3.in(0) << endl;
 
   gset<string> o5;
   o5.add("hello");
@@ -123,6 +125,12 @@ void test_pncounter()
   cout << o3.read() << endl;
 }
 
+void test_pnccounter()
+{
+  pnccounter<int,float> o1,o2,do1,do2;
+
+  o1.inc(2,3.5);
+}
 
 
 void test_aworset()
@@ -373,6 +381,7 @@ int main(int argc, char * argv[])
   test_twopset();
   test_gcounter();
   test_pncounter();
+  test_pnccounter();
   test_aworset();
   test_rworset();
   test_mvreg();

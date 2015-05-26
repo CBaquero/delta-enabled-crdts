@@ -79,10 +79,8 @@ ostream &operator<<( ostream &output, const pair<A,B>& o)
 template<typename T> // Output a set
 ostream &operator<<( ostream &output, const set<T>& o)
 {
-  typename set<T>::iterator it;
   output << "( ";
-  for (it=o.begin(); it!=o.end(); ++it)
-    output << *it << " ";
+  for (auto& e : o) output << e << " ";
   output << ")";
   return output;
 }
@@ -101,10 +99,7 @@ public:
 
   bool in (const T& val) 
   { 
-    if ( s.find(val) == s.end() )
-      return false;
-    else
-      return true;
+    return s.count(val);
   }
 
   friend ostream &operator<<( ostream &output, const gset<T>& o)
@@ -146,10 +141,7 @@ public:
 
   bool in (const T& val) 
   { 
-    if ( s.find(val) == s.end() )
-      return false;
-    else
-      return true;
+    return s.count(val);
   }
 
   friend ostream &operator<<( ostream &output, const twopset<T>& o)
@@ -161,7 +153,7 @@ public:
   twopset<T> add (const T& val) 
   { 
     twopset<T> res;
-    if (t.find(val) == t.end()) // only add if not in tombstone set
+    if (t.count(val) == 0) // only add if not in tombstone set
     {
       s.insert(val);
       res.s.insert(val); 
@@ -172,11 +164,7 @@ public:
   twopset<T> rmv (const T& val) 
   { 
     twopset<T> res;
-    typename set<T>::iterator it;
-    if ((it=s.find(val)) != s.end()) // remove from s if present
-    {
-      s.erase(it);
-    }
+    s.erase(val);
     t.insert(val); // add to tombstones
     res.t.insert(val); 
     return res; 
@@ -184,17 +172,16 @@ public:
 
   void join (const twopset<T>& o)
   {
-    typename set<T>::iterator soit;
-    typename set<T>::iterator sit;
-    for (soit=o.t.begin(); soit!=o.t.end(); ++soit) // see other tombstones
+    for (auto& ot : o.t) // see other tombstones
     {
-      t.insert(*soit); // insert them locally
-      if ((sit=s.find(*soit)) != s.end()) // remove val if present
-        s.erase(sit);
+      t.insert(ot); // insert them locally
+      if (s.count(ot) == 1) // remove val if present
+        s.erase(ot);
     }
-    for (soit=o.s.begin(); soit!=o.s.end(); ++soit) // add other vals 
-      if (t.find(*soit) == t.end()) // only add if not in tombstone set
-        s.insert(*soit); 
+    for (auto& os : o.s) // add other vals, if not tombstone
+    {
+      if (t.count(os) == 0) s.insert(os);
+    }
   }
 };
 
@@ -292,6 +279,31 @@ public:
   { 
     output << "PNCounter:P:" << o.p << " PNCounter:N:" << o.n;
     return output;            
+  }
+
+};
+
+template <typename K=string, typename V=int>
+class pnccounter
+{
+private:
+  map<K,pair<int,V> > m;
+
+public:
+  pnccounter inc(K id, V tosum=1) // 2nd argument is optional
+  {
+    pnccounter<K,V> res;
+
+    pair<typename map<K,pair<int,V> >::iterator,bool> ret;
+    ret=m.insert(pair<K,pair<int,V> >(id,pair<int,V>(1,tosum)));
+    if (ret.second==false) // already there, so update it
+    {
+      m.at(id).first+=1; // optional
+      m.at(id).second+=tosum;
+    }
+    res.m.insert(pair<K,pair<int,V> >(id,m.at(id)));
+
+    return res;
   }
 
 };
