@@ -51,8 +51,6 @@ void test_gset()
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.in(1) << o3.in(0) << endl;
-  o3.read().erase(1);
-  cout << o3.in(1) << o3.in(0) << endl;
 
   gset<string> o5;
   o5.add("hello");
@@ -89,13 +87,15 @@ void test_twopset()
 void test_gcounter()
 {
   // default template type is string key and int value
-  gcounter<> o1,o2,do1,do2;
+  gcounter<> o1("idx");
+  gcounter<> o2("idy");
+  gcounter<> do1,do2;
 
-  do1.join(o1.inc("idx"));
-  do1.join(o1.inc("idx",4));
+  do1.join(o1.inc());
+  do1.join(o1.inc(4));
 
-  do2.join(o2.inc("idy"));
-  do2.join(o2.inc("idy"));
+  do2.join(o2.inc());
+  do2.join(o2.inc());
 
   gcounter<> o3 = join(o1,o2);
   gcounter<> o4 = join(join(o1,do1),join(o2,do1));
@@ -109,9 +109,11 @@ void test_gcounter()
 void test_pncounter()
 {
   // counter with ints in keys and floats in values
-  pncounter<int,float> o1,o2,do1,do2;
+  pncounter<int,float> o1(2);
+  pncounter<int,float> o2(5);
+  pncounter<int,float> do1,do2;
 
-  do1.join(o1.inc(2,3.5));
+  do1.join(o1.inc(3.5));
   do1.join(o1.dec(2));
 
   do2.join(o2.inc(5));
@@ -125,11 +127,23 @@ void test_pncounter()
   cout << o3.read() << endl;
 }
 
-void test_pnccounter()
+void test_lexcounter()
 {
-  pnccounter<int,float> o1,o2,do1,do2;
+  lexcounter<int,int> o1(1);
+  lexcounter<int,int> o2(2);
+  lexcounter<int,int> do1,do2;
 
-  o1.inc(2,3.5);
+  o1.inc(3);
+  o1.inc(2);
+  o1.dec(1);
+  o2.inc(1);
+
+  cout << o1 << endl;
+  cout << o2 << endl;
+
+  o2.join(o1);
+  cout << o2 << endl;
+  cout << o2.read() << endl;
 }
 
 
@@ -381,7 +395,7 @@ int main(int argc, char * argv[])
   test_twopset();
   test_gcounter();
   test_pncounter();
-  test_pnccounter();
+  test_lexcounter();
   test_aworset();
   test_rworset();
   test_mvreg();

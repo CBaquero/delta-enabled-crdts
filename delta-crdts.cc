@@ -80,7 +80,7 @@ template<typename T> // Output a set
 ostream &operator<<( ostream &output, const set<T>& o)
 {
   output << "( ";
-  for (auto& e : o) output << e << " ";
+  for (const auto& e : o) output << e << " ";
   output << ")";
   return output;
 }
@@ -93,7 +93,7 @@ private:
 
 public:
 
-  set<T> read () { return s; }
+  set<T> read () const { return s; }
 
   bool operator == ( const gset<T>& o ) const { return s==o.s; }
 
@@ -172,13 +172,13 @@ public:
 
   void join (const twopset<T>& o)
   {
-    for (auto& ot : o.t) // see other tombstones
+    for (const auto& ot : o.t) // see other tombstones
     {
       t.insert(ot); // insert them locally
       if (s.count(ot) == 1) // remove val if present
         s.erase(ot);
     }
-    for (auto& os : o.s) // add other vals, if not tombstone
+    for (const auto& os : o.s) // add other vals, if not tombstone
     {
       if (t.count(os) == 0) s.insert(os);
     }
@@ -190,16 +190,22 @@ class gcounter
 {
 private:
   map<K,V> m;
+  K id;
 
 public:
-  gcounter inc(K id, V tosum=1) // 2nd argument is optional
+  gcounter() {} // Only for deltas and those should not be mutated
+  gcounter(K a) : id(a) {} // Mutable replicas need a unique id
+
+  gcounter inc(V tosum={1}) // argument is optional
   {
     gcounter<K,V> res;
-    pair<typename map<K,V>::iterator,bool> ret;
-    ret=m.insert(pair<K,V>(id,tosum));
-    if (ret.second==false) // already there, so update it
-      m.at(id)+=tosum;
-    res.m.insert(pair<K,V>(id,m.at(id)));
+//    pair<typename map<K,V>::iterator,bool> ret;
+//    ret=m.insert(pair<K,V>(id,tosum));
+//    if (ret.second==false) // already there, so update it
+//      m.at(id)+=tosum;
+//    res.m.insert(pair<K,V>(id,m.at(id)));
+    m[id]+=tosum;
+    res.m[id]=m[id];
     return res;
   }
 
@@ -208,17 +214,17 @@ public:
     return m==o.m; 
   }
 
-  V read() // get counter value
+  V read() const // get counter value
   {
     V res=0;
-    typename map<K,V>::iterator mit;
-    for(mit=m.begin(); mit!=m.end(); ++mit) res+=mit->second;
+    for (const auto& kv : m) // Fold+ on value list
+      res += kv.second;
     return res;
   }
 
   void join(const gcounter<K,V>& o)
   {
-    typename map<K,V>::const_iterator it;
+/*    typename map<K,V>::const_iterator it;
     pair<typename map<K,V>::const_iterator,bool> ret;
     for (it=o.m.begin(); it!=o.m.end(); ++it)
     {
@@ -226,15 +232,16 @@ public:
       if (ret.second==false) // already there, so update it
         m.at(ret.first->first)=max(ret.first->second,it->second);
     }
-
+*/
+    for (const auto& okv : o.m)
+      m[okv.first]=max(okv.second,m[okv.first]);
   }
 
   friend ostream &operator<<( ostream &output, const gcounter<K,V>& o)
   { 
-    typename map<K,V>::const_iterator it;
     output << "GCounter: ( ";
-    for (it=o.m.begin(); it!=o.m.end(); ++it)
-      output << it->first << "->" << it->second << " ";
+    for (const auto& kv : o.m)
+      output << kv.first << "->" << kv.second << " ";
     output << ")";
     return output;            
   }
@@ -248,17 +255,20 @@ private:
   gcounter<K,V> p,n;
 
 public:
-  pncounter inc(K id, V tosum=1) // 2nd argument is optional
+  pncounter() {} // Only for deltas and those should not be mutated
+  pncounter(K a) : p(a), n(a) {} // Mutable replicas need a unique id
+
+  pncounter inc(V tosum={1}) // Argument is optional
   {
     pncounter<K,V> res;
-    res.p = p.inc(id,tosum); 
+    res.p = p.inc(tosum); 
     return res;
   }
 
-  pncounter dec(K id, V tosum=1) // 2nd argument is optional
+  pncounter dec(V tosum={1}) // Argument is optional
   {
     pncounter<K,V> res;
-    res.n = n.inc(id,tosum); 
+    res.n = n.inc(tosum); 
     return res;
   }
 
@@ -284,26 +294,69 @@ public:
 };
 
 template <typename K=string, typename V=int>
-class pnccounter
+class lexcounter
 {
 private:
   map<K,pair<int,V> > m;
+  K id;
 
 public:
-  pnccounter inc(K id, V tosum=1) // 2nd argument is optional
-  {
-    pnccounter<K,V> res;
+  lexcounter() {} // Only for deltas and those should not be mutated
+  lexcounter(K a) : id(a) {} // Mutable replicas need a unique id
 
-    pair<typename map<K,pair<int,V> >::iterator,bool> ret;
-    ret=m.insert(pair<K,pair<int,V> >(id,pair<int,V>(1,tosum)));
-    if (ret.second==false) // already there, so update it
-    {
-      m.at(id).first+=1; // optional
-      m.at(id).second+=tosum;
-    }
-    res.m.insert(pair<K,pair<int,V> >(id,m.at(id)));
+  lexcounter inc(V tosum=1) // Argument is optional
+  {
+    lexcounter<K,V> res;
+
+//    m[id].first+=1; // optional
+    m[id].second+=tosum;
+    res.m[id]=m[id];
 
     return res;
+  }
+
+  lexcounter dec(V tosum=1) // Argument is optional
+  {
+    lexcounter<K,V> res;
+
+    m[id].first+=1; // mandatory
+    m[id].second-=tosum;
+    res.m[id]=m[id];
+
+    return res;
+  }
+
+  V read() const // get counter value
+  {
+    V res=0;
+    for (const auto& kv : m) // Fold+ on value list
+      res += kv.second.second;
+    return res;
+  }
+
+  void join(const lexcounter<K,V>& o)
+  {
+    for (const auto& okv : o.m)
+//      m[okv.first]=lexjoin(okv.second,m[okv.first]); 
+//      CBM: fix maxorder first to make it work
+    {
+        if (m[okv.first].first < okv.second.first) // update it
+          m[okv.first]=okv.second;
+        else if (m[okv.first].first == okv.second.first) // tie
+        {
+          m[okv.first].second=max(m[okv.first].second,okv.second.second);
+        }
+        // othwerwise (>) dont update
+    }
+  }
+
+  friend ostream &operator<<( ostream &output, const lexcounter<K,V>& o)
+  { 
+    output << "LexCounter: ( ";
+    for (const auto& kv : o.m)
+      output << kv.first << "->" << kv.second << " ";
+    output << ")";
+    return output;            
   }
 
 };
