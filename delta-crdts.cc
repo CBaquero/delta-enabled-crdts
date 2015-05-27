@@ -293,6 +293,57 @@ public:
 
 };
 
+
+template<typename T>
+class maxord // Keeps the max  in a total order starting at default value 
+{
+private:
+  T n {}; 
+
+public:
+
+  friend ostream &operator<<( ostream &output, const maxord<T>& o)
+  { 
+    output << "MaxOrder: " << o.n;
+    return output;            
+  }
+
+  operator T& () { return n; }
+
+  bool operator == ( const maxord<T>& o ) const { return n==o.n; }
+  bool operator > ( const maxord<T>& o ) const { return n>o.n; }
+  bool operator < ( const maxord<T>& o ) const { return n<o.n; }
+  bool operator <= ( const maxord<T>& o ) const { return n<=o.n; }
+  bool operator >= ( const maxord<T>& o ) const { return n>=o.n; }
+  bool operator != ( const maxord<T>& o ) const { return n!=o.n; }
+
+  maxord<T> write(const T& val) // method being deprecated
+  {
+    maxord<T> r;
+    n=max(n,val);
+    r.n=n;
+    return r;
+  }
+
+  maxord<T> operator=(const maxord<T>& o)
+  {
+    if (this != &o) // no need to self assign
+      n=max(n,o.n);
+    return *this;
+  }
+
+  maxord<T> operator=(const T& o)
+  {
+    n=max(n,o);
+    return *this;
+  }
+
+  void join (maxord<T> o) 
+  {
+    n=max(n,o.n);
+  }
+};
+
 template <typename K=string, typename V=int>
 class lexcounter
 {
@@ -822,92 +873,6 @@ public:
   }
 };
 
-
-template<typename T>
-class maxord // Keeps the max value in some total order that starts at 0
-{
-private:
-  T n=0; 
-
-public:
-
-  friend ostream &operator<<( ostream &output, const maxord<T>& o)
-  { 
-    output << "MaxOrder: " << o.n;
-    return output;            
-  }
-
-  operator T& () { return n; }
-
-  bool operator == ( const maxord<T>& o ) const { return n==o.n; }
-  bool operator > ( const maxord<T>& o ) const { return n>o.n; }
-  bool operator < ( const maxord<T>& o ) const { return n<o.n; }
-  bool operator <= ( const maxord<T>& o ) const { return n<=o.n; }
-  bool operator >= ( const maxord<T>& o ) const { return n>=o.n; }
-  bool operator != ( const maxord<T>& o ) const { return n!=o.n; }
-
-  maxord<T> write(const T& val)
-  {
-    maxord<T> r;
-    n=max(n,val);
-    r.n=val; // not sure if return value shouldnt be max for delta
-    return r;
-  }
-
-  const T read() 
-  { 
-    return n; 
-  }
-
-  void join (maxord<T> o) 
-  {
-    n=max(n,o.n);
-  }
-};
-
-/* 
-template<typename T>
-class minord // Keeps the max value in some total order thats starts at ?
-{
-private:
-  T n; 
-
-public:
-
-  friend ostream &operator<<( ostream &output, const minord<T>& o)
-  { 
-    output << "MinOrder: " << o.n;
-    return output;            
-  }
-
-  operator T& () { return n; }
-
-  bool operator == ( const minord<T>& o ) const { return n==o.n; }
-  bool operator > ( const minord<T>& o ) const { return n>o.n; }
-  bool operator < ( const minord<T>& o ) const { return n<o.n; }
-  bool operator <= ( const minord<T>& o ) const { return n<=o.n; }
-  bool operator >= ( const minord<T>& o ) const { return n>=o.n; }
-  bool operator != ( const minord<T>& o ) const { return n!=o.n; }
-
-  minord<T> write(const T& val)
-  {
-    minord<T> r;
-    n=min(n,val);
-    r.n=val;
-    return r;
-  }
-
-  T read() 
-  { 
-    return n; 
-  }
-
-  void join (minord<T> o) 
-  {
-    n=min(n,o.n);
-  }
-};
-*/
 
 template<typename U, typename T>
 class rwlwwset // remove wins bias for identical timestamps

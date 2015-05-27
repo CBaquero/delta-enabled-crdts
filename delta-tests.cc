@@ -116,11 +116,11 @@ void test_pncounter()
   do1.join(o1.inc(3.5));
   do1.join(o1.dec(2));
 
-  do2.join(o2.inc(5));
+  do2.join(o2.inc());
   do2.join(o2.inc(5));
 
   pncounter<int,float> o3 = join(o1,o2);
-  pncounter<int,float> o4 = join(join(o1,do1),join(o2,do1));
+  pncounter<int,float> o4 = join(join(o1,do2),join(o2,do1));
 
   cout << o3 << endl;
   cout << o4 << endl;
@@ -216,8 +216,8 @@ void test_maxord()
   do1.join(o1.write(6)); 
   do1.join(o1.write(3)); 
 
-  do2.join(o2.write(5)); 
-  do2.join(o2.write(10)); 
+  do2.join(o2=5); 
+  do2.join(o2=10); 
 
   maxord<int> o3 = join(o1,o2);
   maxord<int> o4 = join(join(o1,do1),join(o2,do1));
@@ -226,9 +226,19 @@ void test_maxord()
 
   maxord<bool> o5;
   cout << o5 << endl;
-  o5.write(true);
-  o5.write(false); // Once it goes up, it cant go back
+  o5=true;
+  o5=false; // Once it goes up, it cant go back
   cout << o5 << endl;
+
+  
+  maxord<double> a;
+  cout << a << endl;
+  a=1.1;
+  cout << a << endl;
+  a+=1;
+  cout << a << endl;
+ 
+
 }
 
 void example1()
