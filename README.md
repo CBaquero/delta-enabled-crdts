@@ -12,6 +12,7 @@ Current datatypes are:
   * 2PSet: A two phase set that supports removing an element for ever
   * GCounter: A grow only counter
   * PNCounter: A counter supporting increment and decrement
+  * LexCounter: A counter supporting increment and decrement (Cassandra inspired)
   * AWORSet: A add-wins optimized observed-remove set that allows adds and removes
   * RWORSet: A remove-wins optimized observed-remove set that allows adds and removes
   * MVRegister: An optimized multi-value register (new unpublished datatype)
