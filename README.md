@@ -151,7 +151,7 @@ Pair
 
 All CRDTs here can be composed in a pair using the std::pair construction. Join is defined for pairs and applies independently a join to the first and second components of the pair. More formally, pair is the composition by product.  
 
-The example bellow uses the GSets, but any other CRDT type could be composed. 
+The example bellow uses the GSets, but any other valid CRDT types could be composed (including other pairs). 
 
 ```cpp
   pair<gset<int>,gset<char>> a,b,c;
