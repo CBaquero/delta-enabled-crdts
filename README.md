@@ -16,13 +16,14 @@ Current datatypes are:
   * AWORSet: A add-wins optimized observed-remove set that allows adds and removes
   * RWORSet: A remove-wins optimized observed-remove set that allows adds and removes
   * MVRegister: An optimized multi-value register (new unpublished datatype)
-  * MaxOrder: Keeps the maximum value in an ordered payload type
   * RWLWWSet: Last-writer-wins set with remove wins bias (SoundCloud inspired)
   * LWWReg: Last-writer-wins register
   * EWFlag: Flag with enable/disable. Enable wins (Riak Flag inspired)
   * DWFlag: Flag with enable/disable. Disable wins (Riak Flag inspired)
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
+
+If the return of mutation methods is ignored, the datatypes behave as standard state based CRTDs. The use of deltas is strictly optional. 
 
 Check the delta-tests.cc file to get a rough idea on how to use the datatypes.  
 The code is still in a very early state and was not properly tested yet. 
@@ -33,14 +34,14 @@ Simple Example
 Lets make two replicas of an add-wins or-set of strings. Node `x` uses replica `sx` and node `y` uses `sy` (in practice you would like to run this in diferent nodes, and serialize state to move it between nodes). The first node will add and them remove a given string and the other node will add that same string and a diferent one. Finally we will join the two states and see the result. 
 
 ```cpp
-aworset<string> sx,sy;
+aworset<string> sx("x"),sy("y");
 
 // Node x
-sx.add("x","apple");
+sx.add("apple");
 sx.rmv("apple");
 // Node y
-sy.add("y","juice");
-sy.add("y","apple");
+sy.add("juice");
+sy.add("apple");
 
 // Join into one object and show it 
 sx.join(sy);
@@ -49,17 +50,18 @@ cout << sx.read() << endl;
 
 The output will be: `( apple juice )`
 
-With a remove-wins or-set the `rmv` needs to supply a node id. 
+Now, the same example, with a remove-wins or-set and using chars for node ids.
+The default template type for node ids is string, so we need to change it. 
 
 ```cpp
-rworset<string> sx,sy;
+rworset<string,char> sx('x'),sy('y');
 
 // Node x
-sx.add("x","apple");
-sx.rmv("x","apple");
+sx.add("apple");
+sx.rmv("apple");
 // Node y
-sy.add("y","juice");
-sy.add("y","apple");
+sy.add("juice");
+sy.add("apple");
 
 // Join into one object and show it 
 sx.join(sy);

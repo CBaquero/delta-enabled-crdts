@@ -223,7 +223,7 @@ public:
   }
 };
 
-template <typename K=string, typename V=int>
+template <typename V=int, typename K=string>
 class gcounter
 {
 private:
@@ -236,13 +236,13 @@ public:
 
   gcounter inc(V tosum={1}) // argument is optional
   {
-    gcounter<K,V> res;
+    gcounter<V,K> res;
     m[id]+=tosum;
     res.m[id]=m[id];
     return res;
   }
 
-  bool operator == ( const gcounter<K,V>& o ) const 
+  bool operator == ( const gcounter<V,K>& o ) const 
   { 
     return m==o.m; 
   }
@@ -255,13 +255,13 @@ public:
     return res;
   }
 
-  void join(const gcounter<K,V>& o)
+  void join(const gcounter<V,K>& o)
   {
     for (const auto& okv : o.m)
       m[okv.first]=max(okv.second,m[okv.first]);
   }
 
-  friend ostream &operator<<( ostream &output, const gcounter<K,V>& o)
+  friend ostream &operator<<( ostream &output, const gcounter<V,K>& o)
   { 
     output << "GCounter: ( ";
     for (const auto& kv : o.m)
@@ -272,11 +272,11 @@ public:
 
 };
 
-template <typename K=string, typename V=int>
+template <typename V=int, typename K=string>
 class pncounter
 {
 private:
-  gcounter<K,V> p,n;
+  gcounter<V,K> p,n;
 
 public:
   pncounter() {} // Only for deltas and those should not be mutated
@@ -284,14 +284,14 @@ public:
 
   pncounter inc(V tosum={1}) // Argument is optional
   {
-    pncounter<K,V> res;
+    pncounter<V,K> res;
     res.p = p.inc(tosum); 
     return res;
   }
 
   pncounter dec(V tosum={1}) // Argument is optional
   {
-    pncounter<K,V> res;
+    pncounter<V,K> res;
     res.n = n.inc(tosum); 
     return res;
   }
@@ -309,7 +309,7 @@ public:
     n.join(o.n);
   }
 
-  friend ostream &operator<<( ostream &output, const pncounter<K,V>& o)
+  friend ostream &operator<<( ostream &output, const pncounter<V,K>& o)
   { 
     output << "PNCounter:P:" << o.p << " PNCounter:N:" << o.n;
     return output;            
@@ -317,99 +317,7 @@ public:
 
 };
 
-/*
-template<typename T>
-class maxord // Keeps the max  in a total order starting at default value 
-{
-private:
-  T n {}; 
-
-public:
-
-  friend ostream &operator<<( ostream &output, const maxord<T>& o)
-  { 
-    output << "MaxOrder: " << o.n;
-    return output;            
-  }
-
-  operator T& () { return n; }
-
-  bool operator == ( const maxord<T>& o ) const { return n==o.n; }
-  bool operator > ( const maxord<T>& o ) const { return n>o.n; }
-  bool operator < ( const maxord<T>& o ) const { return n<o.n; }
-  bool operator <= ( const maxord<T>& o ) const { return n<=o.n; }
-  bool operator >= ( const maxord<T>& o ) const { return n>=o.n; }
-  bool operator != ( const maxord<T>& o ) const { return n!=o.n; }
-
-  maxord<T> write(const T& val) // method being deprecated, use =
-  {
-    maxord<T> r;
-    n=max(n,val);
-    r.n=n;
-    return r;
-  }
-
-  const T & read() const
-  {
-    return n;
-  }
-
-  maxord<T> & operator=(const maxord<T>& o)
-  {
-    if (this != &o) // no need to self assign
-      n=max(n,o.n);
-    return *this;
-  }
-
-  maxord<T> & operator=(const T& t) // Can encapsulate in the type T
-  {
-    n=max(n,t);
-    return *this;
-  }
-
-  maxord<T> & operator+=(const maxord<T> &o)
-  {
-    n=max(n,n+o.n); // cant go down
-    return *this;
-  }
-
-  maxord<T> & operator+=(const T &t)
-  {
-    n=max(n,n+t); // cant go down
-    return *this;
-  }
-
-  maxord<T> & operator-=(const maxord<T> &o)
-  {
-    n=max(n,n-o.n); // cant go down
-    return *this;
-  }
-
-  maxord<T> & operator-=(const T &t)
-  {
-    n=max(n,n-t); // cant go down
-    return *this;
-  }
-
-  maxord<T> & operator++()
-  {
-    n++;
-    return *this;
-  }
-
-  maxord<T> & operator--()
-  {
-    return *this; // Really cant go down
-  }
-
-  void join (maxord<T> o) 
-  {
-    n=max(n,o.n);
-  }
-};
-*/
-
-template <typename K=string, typename V=int>
+template <typename V=int, typename K=string>
 class lexcounter
 {
 private:
@@ -422,7 +330,7 @@ public:
 
   lexcounter inc(V tosum=1) // Argument is optional
   {
-    lexcounter<K,V> res;
+    lexcounter<V,K> res;
 
 //    m[id].first+=1; // optional
     m[id].second+=tosum;
@@ -433,7 +341,7 @@ public:
 
   lexcounter dec(V tosum=1) // Argument is optional
   {
-    lexcounter<K,V> res;
+    lexcounter<V,K> res;
 
     m[id].first+=1; // mandatory
     m[id].second-=tosum;
@@ -450,25 +358,13 @@ public:
     return res;
   }
 
-  void join(const lexcounter<K,V>& o)
+  void join(const lexcounter<V,K>& o)
   {
     for (const auto& okv : o.m)
       m[okv.first]=lexjoin(okv.second,m[okv.first]); 
-//      CBM: fix maxord first to make it work
-      /*
-    {
-        if (m[okv.first].first < okv.second.first) // update it
-          m[okv.first]=okv.second;
-        else if (m[okv.first].first == okv.second.first) // tie
-        {
-          m[okv.first].second=max(m[okv.first].second,okv.second.second);
-        }
-        // othwerwise (>) dont update
-    }
-    */
   }
 
-  friend ostream &operator<<( ostream &output, const lexcounter<K,V>& o)
+  friend ostream &operator<<( ostream &output, const lexcounter<V,K>& o)
   { 
     output << "LexCounter: ( ";
     for (const auto& kv : o.m)
@@ -480,39 +376,40 @@ public:
 };
 
 
-template<typename T>
+//template<typename T>
+template <typename T, typename K>
 class dotkernel
 {
 public:
 
-  map<pair<string,int>,T> ds;  // Map of dots to vals
-  map<string,int> cc; // Compact causal context
-  set<pair<string,int> > dc; // Dot cloud
+  map<pair<K,int>,T> ds;  // Map of dots to vals
+  map<K,int> cc; // Compact causal context
+  set<pair<K,int> > dc; // Dot cloud
 
-  friend ostream &operator<<( ostream &output, const dotkernel<T>& o)
+  friend ostream &operator<<( ostream &output, const dotkernel<T,K>& o)
   { 
     output << "Kernel: DS ( ";
-    for(typename  map<pair<string,int>,T>::const_iterator it=o.ds.begin(); 
+    for(typename  map<pair<K,int>,T>::const_iterator it=o.ds.begin(); 
         it!=o.ds.end(); ++it)
       output <<  it->first.first << ":" << it->first.second << 
         "->" << it->second << " ";
     output << ")";
     output << " CC ( ";
-    for(map<string,int>::const_iterator it=o.cc.begin(); it!=o.cc.end(); ++it)
+    for(typename map<K,int>::const_iterator it=o.cc.begin(); it!=o.cc.end(); ++it)
       output << it->first << ":" << it->second << " ";
     output << ")";
     output << " DC ( ";
-    for(set<pair<string,int> >::const_iterator it=o.dc.begin(); it!=o.dc.end(); ++it)
+    for(typename set<pair<K,int> >::const_iterator it=o.dc.begin(); it!=o.dc.end(); ++it)
       output << it->first << ":" << it->second << " ";
     output << ")";
     return output;            
   }
 
-  bool dotin (const pair<string,int> & d) const
+  bool dotin (const pair<K,int> & d) const
   {
-    map<string,int>::const_iterator itm=cc.find(d.first);
+    typename map<K,int>::const_iterator itm=cc.find(d.first);
     if (itm != cc.end() && d.second <= cc.at(d.first)) return true;
-    set<pair<string,int> >::const_iterator its=dc.find(d);
+    typename set<pair<K,int> >::const_iterator its=dc.find(d);
     if (its != dc.end()) return true;
     return false;
   }
@@ -520,8 +417,8 @@ public:
   void compact()
   {
     // Compact DC to CC if possible
-    map<string,int>::iterator mit;
-    set<pair<string,int> >::iterator sit;
+    typename map<K,int>::iterator mit;
+    typename set<pair<K,int> >::iterator sit;
     bool flag; // may need to compact several times if ordering not best
     do
     {
@@ -556,13 +453,13 @@ public:
     while(flag==true);
   }
 
-  void join (const dotkernel<T> & o)
+  void join (const dotkernel<T,K> & o)
   {
     if (this == &o) return; // Join is idempotent, but just dont do it.
     // DS
     // will iterate over the two sorted sets to compute join
-    typename  map<pair<string,int>,T>::iterator it;
-    typename  map<pair<string,int>,T>::const_iterator ito;
+    typename  map<pair<K,int>,T>::iterator it;
+    typename  map<pair<K,int>,T>::const_iterator ito;
     it=ds.begin(); ito=o.ds.begin();
     do 
     {
@@ -591,8 +488,8 @@ public:
       }
     } while (it != ds.end() || ito != o.ds.end() );
     // CC
-    typename  map<string,int>::iterator mit;
-    typename  map<string,int>::const_iterator mito;
+    typename  map<K,int>::iterator mit;
+    typename  map<K,int>::const_iterator mito;
     mit=cc.begin(); mito=o.cc.begin();
     do 
     {
@@ -623,35 +520,35 @@ public:
     compact();
   }
 
-  pair<string,int> makedot(string id)
+  pair<K,int> makedot(K id)
   {
     // On a valid dot generator, all dots should be compact on the used id
     // Making the new dot, updates the dot generator and returns the dot
-    pair<map<string,int>::iterator,bool> ret;
-    ret=cc.insert(pair<string,int>(id,1));
+    pair<typename map<K,int>::iterator,bool> ret;
+    ret=cc.insert(pair<K,int>(id,1));
     if (ret.second==false) // already there, so update it
       cc.at(id)+=1; 
     // new dot is at id now: (id,cc.at(id))
-    return pair<string,int>(id,cc.at(id));
+    return pair<K,int>(id,cc.at(id));
   }
 
-  dotkernel<T> add (string id, const T& val) 
+  dotkernel<T,K> add (K id, const T& val) 
   {
-    dotkernel<T> res;
+    dotkernel<T,K> res;
     // get new dot
-    pair<string,int> dot=makedot(id);
+    pair<K,int> dot=makedot(id);
     // add under new dot
-    ds.insert(pair<pair<string,int>,T>(dot,val));
+    ds.insert(pair<pair<K,int>,T>(dot,val));
     // make delta
-    res.ds.insert(pair<pair<string,int>,T>(dot,val));
+    res.ds.insert(pair<pair<K,int>,T>(dot,val));
     res.dc.insert(dot);
     return res;
   }
 
-  dotkernel<T> rmv (const T& val)  // remove all dots matching value
+  dotkernel<T,K> rmv (const T& val)  // remove all dots matching value
   {
-    dotkernel<T> res;
-    typename  map<pair<string,int>,T>::iterator dsit;
+    dotkernel<T,K> res;
+    typename  map<pair<K,int>,T>::iterator dsit;
     for(dsit=ds.begin(); dsit != ds.end();)
     {
       if (dsit->second == val) // match
@@ -666,10 +563,10 @@ public:
     return res;
   }
 
-  dotkernel<T> rmv ()  // remove all dots 
+  dotkernel<T,K> rmv ()  // remove all dots 
   {
-    dotkernel<T> res;
-    typename  map<pair<string,int>,T>::iterator dsit;
+    dotkernel<T,K> res;
+    typename  map<pair<K,int>,T>::iterator dsit;
     for(dsit=ds.begin(); dsit != ds.end();)
     {
       res.dc.insert(dsit->first);
@@ -681,23 +578,27 @@ public:
 
 };
 
-template<typename T>
+template<typename E, typename K=string>
 class aworset    // Add-Wins Observed-Remove Set
 {
 private:
-  dotkernel<T> dk; // Dot kernel
+  dotkernel<E,K> dk; // Dot kernel
+  K id;
 
 public:
-  friend ostream &operator<<( ostream &output, const aworset<T>& o)
+  aworset() {} // Only for deltas and those should not be mutated
+  aworset(K k) : id(k) {} // Mutable replicas need a unique id
+
+  friend ostream &operator<<( ostream &output, const aworset<E,K>& o)
   { 
     output << "AWORSet:" << o.dk;
     return output;            
   }
 
-  set<T> read ()
+  set<E> read ()
   {
-    set<T> res;
-    typename map<pair<string,int>,T>::iterator dsit;
+    set<E> res;
+    typename map<pair<K,int>,E>::iterator dsit;
     for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
     {
       res.insert(dsit->second);
@@ -705,9 +606,9 @@ public:
     return res;
   }
 
-  bool in (const T& val) 
+  bool in (const E& val) 
   { 
-    typename map<pair<string,int>,T>::iterator dsit;
+    typename map<pair<K,int>,E>::iterator dsit;
     for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
     {
       if (dsit->second == val)
@@ -717,22 +618,22 @@ public:
   }
 
 
-  aworset<T> add (string id, const T& val) 
+  aworset<E,K> add (const E& val) 
   {
-    aworset<T> r;
+    aworset<E,K> r;
     r.dk=dk.rmv(val); // optimization that first deletes val
     r.dk.join(dk.add(id,val));
     return r;
   }
 
-  aworset<T> rmv (const T& val)
+  aworset<E,K> rmv (const E& val)
   {
-    aworset<T> r;
+    aworset<E,K> r;
     r.dk=dk.rmv(val); 
     return r;
   }
 
-  void join (aworset<T> o)
+  void join (aworset<E,K> o)
   {
     dk.join(o.dk);
     // Further optimization can be done by keeping for val x and id A 
@@ -740,34 +641,38 @@ public:
   }
 };
 
-template<typename T>
+template<typename E, typename K=string>
 class rworset    // Remove-Wins Observed-Remove Set
 {
 private:
-  dotkernel<pair<T,bool> > dk; // Dot kernel
+  dotkernel<pair<E,bool>,K> dk; // Dot kernel
+  K id;
 
 public:
-  friend ostream &operator<<( ostream &output, const rworset<T>& o)
+  rworset() {} // Only for deltas and those should not be mutated
+  rworset(K k) : id(k) {} // Mutable replicas need a unique id
+
+  friend ostream &operator<<( ostream &output, const rworset<E,K>& o)
   { 
     output << "RWORSet:" << o.dk;
     return output;            
   }
 
-  set<T> read ()
+  set<E> read ()
   {
-    set<T> res;
-    map<T,bool> elems;
-    typename map<pair<string,int>,pair<T,bool> >::iterator dsit;
-    pair<typename map<T,bool>::iterator,bool> ret;
+    set<E> res;
+    map<E,bool> elems;
+    typename map<pair<K,int>,pair<E,bool> >::iterator dsit;
+    pair<typename map<E,bool>::iterator,bool> ret;
     for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
     {
-      ret=elems.insert(pair<T,bool>(dsit->second));
+      ret=elems.insert(pair<E,bool>(dsit->second));
       if (ret.second==false) // val already exists
       {
         elems.at(ret.first->first) &= dsit->second.second; // Fold by &&
       }
     }
-    typename map<T,bool>::iterator mit;
+    typename map<E,bool>::iterator mit;
     for (mit=elems.begin(); mit != elems.end(); ++mit)
     {
       if (mit->second == true) res.insert(mit->first);
@@ -775,34 +680,34 @@ public:
     return res;
   }
 
-  bool in (const T& val) // Could
+  bool in (const E& val) // Could
   { 
     // Code could be slightly faster if re-using only part of read code
-    set<T> s=read();
+    set<E> s=read();
     if ( s.find(val) != s.end() ) return true;
     return false;
   }
 
 
-  rworset<T> add (string id, const T& val) 
+  rworset<E,K> add (const E& val) 
   {
-    rworset<T> r;
-    r.dk=dk.rmv(pair<T,bool>(val,true));  // Remove any observed add token
-    r.dk.join(dk.rmv(pair<T,bool>(val,false))); // Remove any observed remove token
-    r.dk.join(dk.add(id,pair<T,bool>(val,true)));
+    rworset<E,K> r;
+    r.dk=dk.rmv(pair<E,bool>(val,true));  // Remove any observed add token
+    r.dk.join(dk.rmv(pair<E,bool>(val,false))); // Remove any observed remove token
+    r.dk.join(dk.add(id,pair<E,bool>(val,true)));
     return r;
   }
 
-  rworset<T> rmv (string id, const T& val)
+  rworset<E,K> rmv (const E& val)
   {
-    rworset<T> r;
-    r.dk=dk.rmv(pair<T,bool>(val,true));  // Remove any observed add token
-    r.dk.join(dk.rmv(pair<T,bool>(val,false))); // Remove any observed remove token
-    r.dk.join(dk.add(id,pair<T,bool>(val,false)));
+    rworset<E,K> r;
+    r.dk=dk.rmv(pair<E,bool>(val,true));  // Remove any observed add token
+    r.dk.join(dk.rmv(pair<E,bool>(val,false))); // Remove any observed remove token
+    r.dk.join(dk.add(id,pair<E,bool>(val,false)));
     return r;
   }
 
-  void join (rworset<T> o)
+  void join (rworset<E,K> o)
   {
     dk.join(o.dk);
   }
@@ -810,32 +715,36 @@ public:
 
 
 
-template<typename T>
+template<typename V, typename K=string>
 class mvreg    // Multi-value register, Optimized
 {
 private:
-  dotkernel<T> dk; // Dot kernel
+  dotkernel<V,K> dk; // Dot kernel
+  K id;
 
 public:
-  friend ostream &operator<<( ostream &output, const mvreg<T>& o)
+  mvreg() {} // Only for deltas and those should not be mutated
+  mvreg(K k) : id(k) {} // Mutable replicas need a unique id
+
+  friend ostream &operator<<( ostream &output, const mvreg<V,K>& o)
   { 
     output << "MVReg:" << o.dk;
     return output;            
   }
 
-  mvreg<T> write (string id, const T& val) 
+  mvreg<V,K> write (const V& val) 
   {
-    mvreg<T> r,a;
+    mvreg<V,K> r,a;
     r.dk=dk.rmv(); 
     a.dk=dk.add(id,val);
     r.join(a);
     return r;
   }
 
-  set<T> read ()
+  set<V> read ()
   {
-    set<T> s;
-    typename  map<pair<string,int>,T>::iterator dsit;
+    set<V> s;
+    typename  map<pair<K,int>,V>::iterator dsit;
     for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
     {
       s.insert(dsit->second);
@@ -843,21 +752,26 @@ public:
     return s;
   }
 
-  void join (mvreg<T> o)
+  void join (mvreg<V,K> o)
   {
     dk.join(o.dk);
   }
 };
 
 
+template<typename K=string>
 class ewflag    // Enable-Wins Flag
 {
 private:
   // To re-use the kernel there is an artificial need for dot-tagged bool payload
-  dotkernel<bool> dk; // Dot kernel
+  dotkernel<bool,K> dk; // Dot kernel
+  K id;
 
 public:
-  friend ostream &operator<<( ostream &output, const ewflag& o)
+  ewflag() {} // Only for deltas and those should not be mutated
+  ewflag(K k) : id(k) {} // Mutable replicas need a unique id
+
+  friend ostream &operator<<( ostream &output, const ewflag<K>& o)
   { 
     output << "EWFlag:" << o.dk;
     return output;            
@@ -865,7 +779,7 @@ public:
 
   bool read ()
   {
-    typename map<pair<string,int>,bool>::iterator dsit;
+    typename map<pair<K,int>,bool>::iterator dsit;
     if ( dk.ds.begin() == dk.ds.end()) 
       // No active dots
       return false;
@@ -874,35 +788,40 @@ public:
       return true;
   }
 
-  ewflag enable (string id) 
+  ewflag<K> enable () 
   {
-    ewflag r;
+    ewflag<K> r;
     r.dk=dk.rmv(true); // optimization that first deletes active dots
     r.dk.join(dk.add(id,true));
     return r;
   }
 
-  ewflag disable ()
+  ewflag<K> disable ()
   {
-    ewflag r;
+    ewflag<K> r;
     r.dk=dk.rmv(true); 
     return r;
   }
 
-  void join (ewflag o)
+  void join (ewflag<K> o)
   {
     dk.join(o.dk);
   }
 };
 
+template<typename K=string>
 class dwflag    // Disable-Wins Flag
 {
 private:
   // To re-use the kernel there is an artificial need for dot-tagged bool payload
-  dotkernel<bool> dk; // Dot kernel
+  dotkernel<bool,K> dk; // Dot kernel
+  K id;
 
 public:
-  friend ostream &operator<<( ostream &output, const dwflag& o)
+  dwflag() {} // Only for deltas and those should not be mutated
+  dwflag(K k) : id(k) {} // Mutable replicas need a unique id
+
+  friend ostream &operator<<( ostream &output, const dwflag<K>& o)
   { 
     output << "DWFlag:" << o.dk;
     return output;            
@@ -910,7 +829,7 @@ public:
 
   bool read ()
   {
-    typename map<pair<string,int>,bool>::iterator dsit;
+    typename map<pair<K,int>,bool>::iterator dsit;
     if ( dk.ds.begin() == dk.ds.end()) 
       // No active dots
       return true;
@@ -919,22 +838,22 @@ public:
       return false;
   }
 
-  dwflag disable (string id) 
+  dwflag<K> disable () 
   {
-    dwflag r;
+    dwflag<K> r;
     r.dk=dk.rmv(false); // optimization that first deletes active dots
     r.dk.join(dk.add(id,false));
     return r;
   }
 
-  dwflag enable ()
+  dwflag<K> enable ()
   {
-    dwflag r;
+    dwflag<K> r;
     r.dk=dk.rmv(false); 
     return r;
   }
 
-  void join (dwflag o)
+  void join (dwflag<K> o)
   {
     dk.join(o.dk);
   }

@@ -113,9 +113,9 @@ void test_pncounter()
 {
   cout << "--- Testing: pncounter --\n";
   // counter with ints in keys and floats in values
-  pncounter<int,float> o1(2);
-  pncounter<int,float> o2(5);
-  pncounter<int,float> do1,do2;
+  pncounter<float,int> o1(2);
+  pncounter<float,int> o2(5);
+  pncounter<float,int> do1,do2;
 
   do1.join(o1.inc(3.5));
   do1.join(o1.dec(2));
@@ -123,8 +123,8 @@ void test_pncounter()
   do2.join(o2.inc());
   do2.join(o2.inc(5));
 
-  pncounter<int,float> o3 = join(o1,o2);
-  pncounter<int,float> o4 = join(join(o1,do2),join(o2,do1));
+  pncounter<float,int> o3 = join(o1,o2);
+  pncounter<float,int> o4 = join(join(o1,do2),join(o2,do1));
 
   cout << o3 << endl;
   cout << o4 << endl;
@@ -134,9 +134,9 @@ void test_pncounter()
 void test_lexcounter()
 {
   cout << "--- Testing: lexcounter --\n";
-  lexcounter<char,int> o1('a');
-  lexcounter<char,int> o2('b');
-  lexcounter<char,int> do1,do2;
+  lexcounter<int,char> o1('a');
+  lexcounter<int,char> o2('b');
+  lexcounter<int,char> do1,do2;
 
   o1.inc(3);
   o1.inc(2);
@@ -154,13 +154,13 @@ void test_lexcounter()
 void test_aworset()
 {
   cout << "--- Testing: aworset --\n";
-  aworset<char> o1,o2,do1,do2;
+  aworset<char> o1("idx"),o2("idy"),do1,do2;
 
-  do1.join(o1.add("idx",'a')); 
-  do1.join(o1.add("idx",'b')); 
+  do1.join(o1.add('a')); 
+  do1.join(o1.add('b')); 
 
-  do2.join(o2.add("idy",'b')); 
-  do2.join(o2.add("idy",'c')); 
+  do2.join(o2.add('b')); 
+  do2.join(o2.add('c')); 
   do2.join(o2.rmv('b')); 
 
   aworset<char> o3 = join(o1,o2);
@@ -169,24 +169,24 @@ void test_aworset()
   cout << o4 << endl;
   cout << o3.in('c') << o3.in('b') << endl;
 
-  aworset<string> o5;
-  o5.add("idz","hello");
-  o5.add("idz","world");
-  o5.add("idz","my");
+  aworset<string> o5("idz");
+  o5.add("hello");
+  o5.add("world");
+  o5.add("my");
   cout << o5 << endl;
 }
 
 void test_rworset()
 {
   cout << "--- Testing: rworset --\n";
-  rworset<char> o1,o2,do1,do2;
+  rworset<char> o1("id x"),o2("id y"),do1,do2;
 
-  do1.join(o1.add("idx",'a')); 
-  do1.join(o1.add("idx",'b')); 
+  do1.join(o1.add('a')); 
+  do1.join(o1.add('b')); 
 
-  do2.join(o2.add("idy",'b')); 
-  do2.join(o2.add("idy",'c')); 
-  do2.join(o2.rmv("idy",'b')); 
+  do2.join(o2.add('b')); 
+  do2.join(o2.add('c')); 
+  do2.join(o2.rmv('b')); 
 
   rworset<char> o3 = join(o1,o2);
   rworset<char> o4 = join(join(o1,do1),join(o2,do1));
@@ -200,19 +200,19 @@ void test_rworset()
 void test_mvreg()
 {
   cout << "--- Testing: mvreg --\n";
-  mvreg<string> o1,o2,do1,do2;
+  mvreg<string> o1("id x"),o2("id y"),do1,do2;
 
-  do1.join(o1.write("idx","hello")); 
-  do1.join(o1.write("idx","world")); 
+  do1.join(o1.write("hello")); 
+  do1.join(o1.write("world")); 
 
-  do2.join(o2.write("idy","world")); 
-  do2.join(o2.write("idy","hello")); 
+  do2.join(o2.write("world")); 
+  do2.join(o2.write("hello")); 
 
   mvreg<string> o3 = join(o1,o2);
   mvreg<string> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
-  o3.write("idz","hello world");
+  o3.write("hello world");
   o4.join(o3);
   cout << o4 << endl;
 }
@@ -253,14 +253,14 @@ void test_maxord()
 
 void example1()
 {
-  aworset<string> sx,sy;
+  aworset<string> sx("x"),sy("y");
 
   // Node x
-  sx.add("x","apple");
+  sx.add("apple");
   sx.rmv("apple");
   // Node y
-  sy.add("y","juice");
-  sy.add("y","apple");
+  sy.add("juice");
+  sy.add("apple");
 
   // Join into one object and show it 
   sx.join(sy);
@@ -269,14 +269,14 @@ void example1()
 
 void example2()
 {
-  rworset<string> sx,sy;
+  rworset<string,char> sx('x'),sy('y');
 
   // Node x
-  sx.add("x","apple");
-  sx.rmv("x","apple");
+  sx.add("apple");
+  sx.rmv("apple");
   // Node y
-  sy.add("y","juice");
-  sy.add("y","apple");
+  sy.add("juice");
+  sy.add("apple");
 
   // Join into one object and show it 
   sx.join(sy);
@@ -356,15 +356,15 @@ void test_rwlwwset()
 void test_ewflag()
 {
   cout << "--- Testing: ewflag --\n";
-  ewflag o1,o2,do1,do2;
+  ewflag<> o1("id x"),o2("id y"),do1,do2;
 
-  do1.join(o1.enable("idx")); 
+  do1.join(o1.enable()); 
 
-  do2.join(o2.enable("idy")); 
-  do2.join(o2.enable("idy")); // re-enable is fine
+  do2.join(o2.enable()); 
+  do2.join(o2.enable()); // re-enable is fine
 
-  ewflag o3 = join(o1,o2);
-  ewflag o4 = join(join(o1,do1),join(o2,do1));
+  ewflag<> o3 = join(o1,o2);
+  ewflag<> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o4.read() << endl;
@@ -377,15 +377,15 @@ void test_ewflag()
 void test_dwflag()
 {
   cout << "--- Testing: dwflag --\n";
-  dwflag o1,o2,do1,do2;
+  dwflag<> o1("id x"),o2("id y"),do1,do2;
 
-  do1.join(o1.disable("idx")); 
+  do1.join(o1.disable()); 
 
-  do2.join(o2.disable("idy")); 
-  do2.join(o2.disable("idy")); // re-disable is fine
+  do2.join(o2.disable()); 
+  do2.join(o2.disable()); // re-disable is fine
 
-  dwflag o3 = join(o1,o2);
-  dwflag o4 = join(join(o1,do1),join(o2,do1));
+  dwflag<> o3 = join(o1,o2);
+  dwflag<> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o4.read() << endl;
@@ -397,13 +397,13 @@ void test_dwflag()
 
 void benchmark1()
 {
-  aworset<int> g;
+  aworset<int,char> g('i');
 
   const long double TimeBefore = time(0);
 
-  for(int i=1; i < 100000; i++) // 100k
+  for(int i=1; i < 20000; i++) // 100k
   {
-    g.add("id",i);
+    g.add(i);
   }
 
   cout << g.in(0) << endl;
@@ -435,7 +435,7 @@ int main(int argc, char * argv[])
   example2();
   example3();
 
-  // benchmark1();
+  benchmark1();
 
 
 }
