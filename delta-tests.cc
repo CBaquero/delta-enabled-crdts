@@ -438,7 +438,22 @@ void example_twopset()
   gset<float> c;
   c.add(42);
 
-  cout << (join(a,b).read() == c.read()) << endl; // true
+  cout << ( join(a,b).read() == c.read() ) << endl; // true
+}
+
+void example_pair()
+{
+  pair<gset<int>,gset<char>> a,b,c;
+
+  a.first.add(0); 
+  b.first.add(1);
+  a.second.add('a'); 
+  b.second.add('x'); b.second.add('y');
+
+  c=join(a,b);
+
+  cout << c << endl; // (GSet: ( 0 1 ),GSet: ( a x y ))
+  
 }
 
 int main(int argc, char * argv[])
@@ -464,6 +479,7 @@ int main(int argc, char * argv[])
 
   example_gset();
   example_twopset();
+  example_pair();
 
 //  benchmark1();
 

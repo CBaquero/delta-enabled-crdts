@@ -109,6 +109,8 @@ them to `x` replica.
 Datatype Example Catalog
 ------------------------
 
+In construction is a catalog of simple examples for each datatype
+
 GSet
 ----
 
@@ -124,7 +126,7 @@ Grow only sets do not require node ids and can store any type that is storable i
 ```
 
 TwoPSet
------
+-------
 
 Two phase sets can both add and remove elements, but removed elements cannot be re-added. Both GSets and TwoPSets can be read to return a std::set with the payload. 
 
@@ -143,6 +145,27 @@ Two phase sets can both add and remove elements, but removed elements cannot be 
 
   cout << ( join(a,b).read() == c.read() ) << endl; // true
 ```
+
+Pair
+----
+
+All CRDTs here can be composed in a pair using the std::pair construction. Join is defined for pairs and applies independently a join to the first and second components of the pair. More formally, pair is the composition by product.  
+
+The example bellow uses the GSets, but any other CRDT type could be composed. 
+
+```cpp
+  pair<gset<int>,gset<char>> a,b,c;
+
+  a.first.add(0); 
+  b.first.add(1);
+  a.second.add('a'); 
+  b.second.add('x'); b.second.add('y');
+
+  c=join(a,b);
+
+  cout << c << endl; // (GSet: ( 0 1 ),GSet: ( a x y ))
+```
+Keep tuned for more datatype examples soon ...
 
 Additional information
 ----------------------
