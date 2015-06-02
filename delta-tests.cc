@@ -414,6 +414,33 @@ void benchmark1()
   cout << "Elapsed System Time in Seconds is " << TimeAfter-TimeBefore << "." << endl;
 }
 
+void example_gset()
+{
+  gset<string> a,b;
+
+  a.add("red");
+  b.add("blue");
+
+  cout << join(a,b) << endl; // GSet: ( blue red )
+}
+
+void example_twopset()
+{
+  twopset<float> a,b;
+
+  a.add(3.1415);
+  a.rmv(3.1415);
+  b.add(42);
+  b.add(3.1415);
+
+  cout << join(a,b) << endl; // 2PSet: S( 42 ) T ( 3.1415 )
+
+  gset<float> c;
+  c.add(42);
+
+  cout << (join(a,b).read() == c.read()) << endl; // true
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -435,7 +462,10 @@ int main(int argc, char * argv[])
   example2();
   example3();
 
-  benchmark1();
+  example_gset();
+  example_twopset();
+
+//  benchmark1();
 
 
 }

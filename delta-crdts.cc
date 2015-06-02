@@ -170,7 +170,7 @@ private:
 
 public:
 
-  twopset<T> read () { return s; }
+  set<T> read () { return s; }
 
   bool operator == ( const twopset<T>& o ) const 
   { 

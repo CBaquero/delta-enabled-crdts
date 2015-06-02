@@ -23,7 +23,7 @@ Current datatypes are:
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
-If the return of mutation methods is ignored, the datatypes behave as standard state based CRTDs. The use of deltas is strictly optional. 
+If the return of mutation methods is ignored, the datatypes behave as standard state based CRDTs. The use of deltas is strictly optional. 
 
 Check the delta-tests.cc file to get a rough idea on how to use the datatypes.  
 The code is still in a very early state and was not properly tested yet. 
@@ -31,7 +31,7 @@ The code is still in a very early state and was not properly tested yet.
 Simple Example
 --------------
 
-Lets make two replicas of an add-wins or-set of strings. Node `x` uses replica `sx` and node `y` uses `sy` (in practice you would like to run this in diferent nodes, and serialize state to move it between nodes). The first node will add and them remove a given string and the other node will add that same string and a diferent one. Finally we will join the two states and see the result. 
+Lets make two replicas of an add-wins or-set of strings. Node `x` uses replica `sx` and node `y` uses `sy` (in practice you would like to run this in different nodes, and serialize state to move it between nodes). The first node will add and them remove a given string and the other node will add that same string and a diferent one. Finally we will join the two states and see the result. 
 
 ```cpp
 aworset<string> sx("x"),sy("y");
@@ -51,7 +51,7 @@ cout << sx.read() << endl;
 The output will be: `( apple juice )`
 
 Now, the same example, with a remove-wins or-set and using chars for node ids.
-The default template type for node ids is string, so we need to change it. 
+The default template type for node ids is string, so we need to change it to char in the second template argument. 
 
 ```cpp
 rworset<string,char> sx('x'),sy('y');
@@ -106,7 +106,43 @@ them to `x` replica.
   cout << sx.read() << endl;  // ( 1 2 3 4 )
 ```
 
-Have fun ...
+Datatype Example Catalog
+------------------------
+
+GSet
+----
+
+Grow only sets do not require node ids and can store any type that is storable in a C++ std::set. These sets can only grow and do not support removal of elements. Join is by set union. 
+
+```cpp
+  gset<string> a,b;
+
+  a.add("red");
+  b.add("blue");
+
+  cout << join(a,b) << endl; // GSet: ( blue red )
+```
+
+TwoPSet
+-----
+
+Two phase sets can both add and remove elements, but removed elements cannot be re-added. Both GSets and TwoPSets can be read to return a std::set with the payload. 
+
+```cpp
+  twopset<float> a,b;
+
+  a.add(3.1415);
+  a.rmv(3.1415);
+  b.add(42);
+  b.add(3.1415);
+
+  cout << join(a,b) << endl; // 2PSet: S( 42 ) T ( 3.1415 )
+
+  gset<float> c;
+  c.add(42);
+
+  cout << ( join(a,b).read() == c.read() ) << endl; // true
+```
 
 Additional information
 ----------------------
