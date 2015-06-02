@@ -178,7 +178,7 @@ A special use of pairs is when the first elements are comparable in a total orde
 GCounter
 --------
 
-The GCounter is basically a counter that starts at 0 and can only be incremented (and thus stays always positive). It is implementing by storing one number per each active replica, and thus the programmer must decide a type for the replica/actor) id (string by default) and indicate the type for the value itself. Increments have a default of +1 but they can be changed. In the example we create three replicas 'x', 'y', 'z' and do some concurrent increments and read the result. We also show that join is idempotent.  
+The GCounter is basically a counter that starts at 0 and can only be incremented (and thus stays always positive). It is implemented by storing one number per each active replica, and thus the programmer must decide a type for the replica/actor) id (string by default) and indicate the type for the value itself (int by default). Increments have a default of +1 but they can be changed. In the example we create three replicas 'x', 'y', 'z' and do some concurrent and sequential increments and read the result. We also show that join is idempotent.  
 
 ```cpp
   gcounter<unsigned int> x("x"),y("y"),z("z");
