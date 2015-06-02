@@ -38,6 +38,7 @@ using namespace std;
 
 void test_gset()
 {
+  cout << "--- Testing: gset --\n";
   gset<int> o1,o2,do1,do2;
 
   do1.join(o1.add(1)); 
@@ -61,6 +62,7 @@ void test_gset()
 
 void test_twopset()
 {
+  cout << "--- Testing: twopset --\n";
   twopset<int> o1,o2,do1,do2;
 
   do1.join(o1.add(1)); 
@@ -86,6 +88,7 @@ void test_twopset()
 
 void test_gcounter()
 {
+  cout << "--- Testing: gcounter --\n";
   // default template type is string key and int value
   gcounter<> o1("idx");
   gcounter<> o2("idy");
@@ -108,6 +111,7 @@ void test_gcounter()
 
 void test_pncounter()
 {
+  cout << "--- Testing: pncounter --\n";
   // counter with ints in keys and floats in values
   pncounter<int,float> o1(2);
   pncounter<int,float> o2(5);
@@ -129,9 +133,10 @@ void test_pncounter()
 
 void test_lexcounter()
 {
-  lexcounter<int,int> o1(1);
-  lexcounter<int,int> o2(2);
-  lexcounter<int,int> do1,do2;
+  cout << "--- Testing: lexcounter --\n";
+  lexcounter<char,int> o1('a');
+  lexcounter<char,int> o2('b');
+  lexcounter<char,int> do1,do2;
 
   o1.inc(3);
   o1.inc(2);
@@ -142,13 +147,13 @@ void test_lexcounter()
   cout << o2 << endl;
 
   o2.join(o1);
-  cout << o2 << endl;
   cout << o2.read() << endl;
 }
 
 
 void test_aworset()
 {
+  cout << "--- Testing: aworset --\n";
   aworset<char> o1,o2,do1,do2;
 
   do1.join(o1.add("idx",'a')); 
@@ -173,6 +178,7 @@ void test_aworset()
 
 void test_rworset()
 {
+  cout << "--- Testing: rworset --\n";
   rworset<char> o1,o2,do1,do2;
 
   do1.join(o1.add("idx",'a')); 
@@ -193,6 +199,7 @@ void test_rworset()
 
 void test_mvreg()
 {
+  cout << "--- Testing: mvreg --\n";
   mvreg<string> o1,o2,do1,do2;
 
   do1.join(o1.write("idx","hello")); 
@@ -210,6 +217,7 @@ void test_mvreg()
   cout << o4 << endl;
 }
 
+/*
 void test_maxord()
 {
   maxord<int> o1,o2,do1,do2;
@@ -232,14 +240,16 @@ void test_maxord()
 
   
   maxord<double> a;
+  maxord<double> b;
   cout << a << endl;
   a=1.1;
   cout << a << endl;
-  a+=1;
-  cout << a << endl;
+  b=(--a);
+  cout << b << endl;
  
 
 }
+*/
 
 void example1()
 {
@@ -299,20 +309,22 @@ void example3()
 
 void test_maxpairs()
 {
-  pair<maxord<int>,gset<int> > a, b, c, d;
-  a.first.write(1);
+  cout << "--- Testing: lexjoin on pairs --\n";
+  pair<int,gset<int> > a, b, c, d;
+  a.first=1;
   a.second.add(0);
-  b.first.write(0);
+  b.first=0;
   b.second.add(1);
   c=join(a,b);
   cout << c << endl;
   d=lexjoin(a,b);
   cout << d << endl;
-  pair<maxord<float>,twopset<char> > e;
+  pair<float,twopset<char> > e;
 }
 
 void test_lwwreg()
 {
+  cout << "--- Testing: lwwreg --\n";
   lwwreg<int,string> r;
 
   r.write(1,"Hello");
@@ -327,6 +339,7 @@ void test_lwwreg()
 
 void test_rwlwwset()
 {
+  cout << "--- Testing: rwlwwset --\n";
   rwlwwset<int,string> s;
   s.add(1,"a");
   s.add(1,"b");
@@ -342,6 +355,7 @@ void test_rwlwwset()
 
 void test_ewflag()
 {
+  cout << "--- Testing: ewflag --\n";
   ewflag o1,o2,do1,do2;
 
   do1.join(o1.enable("idx")); 
@@ -362,6 +376,7 @@ void test_ewflag()
 
 void test_dwflag()
 {
+  cout << "--- Testing: dwflag --\n";
   dwflag o1,o2,do1,do2;
 
   do1.join(o1.disable("idx")); 
@@ -409,7 +424,7 @@ int main(int argc, char * argv[])
   test_aworset();
   test_rworset();
   test_mvreg();
-  test_maxord();
+//  test_maxord();
   test_maxpairs();
   test_lwwreg();
   test_rwlwwset();

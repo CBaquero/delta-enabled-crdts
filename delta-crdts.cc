@@ -31,15 +31,53 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <type_traits>
 
 using namespace std;
 
+//template<typename T> // Join two objects, deriving a new one
+//T join(const T& l, const T& r) // assuming copy constructor
+//{
+//  T res;
+//  res=l;
+//  res.join(r);
+//  return res;
+//}
+
+//int join(const int & l, const int & r)
+//{
+//  return max(l,r);
+//}
+
+template< bool b > 
+struct join_selector { 
+  template< typename T > 
+  static T join( const T& l, const T& r ) 
+  { 
+    T res;
+    res=l;
+    res.join(r);
+    return res;
+  } 
+};
+
+template<> 
+struct join_selector < true > { 
+  template< typename T > 
+  static T join( const T& l, const T& r ) 
+  { 
+    T res;
+    res=max(l,r);
+    return res;
+  } 
+};
+
+
+// Join with C++ traits
 template<typename T> // Join two objects, deriving a new one
 T join(const T& l, const T& r) // assuming copy constructor
 {
-  T res=l;
-  res.join(r);
-  return res;
+  return join_selector< is_arithmetic<T>::value >::join(l,r);
 }
 
 template<typename A, typename B> // Join two pairs of objects
@@ -199,11 +237,6 @@ public:
   gcounter inc(V tosum={1}) // argument is optional
   {
     gcounter<K,V> res;
-//    pair<typename map<K,V>::iterator,bool> ret;
-//    ret=m.insert(pair<K,V>(id,tosum));
-//    if (ret.second==false) // already there, so update it
-//      m.at(id)+=tosum;
-//    res.m.insert(pair<K,V>(id,m.at(id)));
     m[id]+=tosum;
     res.m[id]=m[id];
     return res;
@@ -224,15 +257,6 @@ public:
 
   void join(const gcounter<K,V>& o)
   {
-/*    typename map<K,V>::const_iterator it;
-    pair<typename map<K,V>::const_iterator,bool> ret;
-    for (it=o.m.begin(); it!=o.m.end(); ++it)
-    {
-      ret=m.insert(*it);
-      if (ret.second==false) // already there, so update it
-        m.at(ret.first->first)=max(ret.first->second,it->second);
-    }
-*/
     for (const auto& okv : o.m)
       m[okv.first]=max(okv.second,m[okv.first]);
   }
@@ -293,7 +317,7 @@ public:
 
 };
 
-
+/*
 template<typename T>
 class maxord // Keeps the max  in a total order starting at default value 
 {
@@ -317,7 +341,7 @@ public:
   bool operator >= ( const maxord<T>& o ) const { return n>=o.n; }
   bool operator != ( const maxord<T>& o ) const { return n!=o.n; }
 
-  maxord<T> write(const T& val) // method being deprecated
+  maxord<T> write(const T& val) // method being deprecated, use =
   {
     maxord<T> r;
     n=max(n,val);
@@ -325,17 +349,57 @@ public:
     return r;
   }
 
-  maxord<T> operator=(const maxord<T>& o)
+  const T & read() const
+  {
+    return n;
+  }
+
+  maxord<T> & operator=(const maxord<T>& o)
   {
     if (this != &o) // no need to self assign
       n=max(n,o.n);
     return *this;
   }
 
-  maxord<T> operator=(const T& o)
+  maxord<T> & operator=(const T& t) // Can encapsulate in the type T
   {
-    n=max(n,o);
+    n=max(n,t);
     return *this;
+  }
+
+  maxord<T> & operator+=(const maxord<T> &o)
+  {
+    n=max(n,n+o.n); // cant go down
+    return *this;
+  }
+
+  maxord<T> & operator+=(const T &t)
+  {
+    n=max(n,n+t); // cant go down
+    return *this;
+  }
+
+  maxord<T> & operator-=(const maxord<T> &o)
+  {
+    n=max(n,n-o.n); // cant go down
+    return *this;
+  }
+
+  maxord<T> & operator-=(const T &t)
+  {
+    n=max(n,n-t); // cant go down
+    return *this;
+  }
+
+  maxord<T> & operator++()
+  {
+    n++;
+    return *this;
+  }
+
+  maxord<T> & operator--()
+  {
+    return *this; // Really cant go down
   }
 
   void join (maxord<T> o) 
@@ -343,6 +407,7 @@ public:
     n=max(n,o.n);
   }
 };
+*/
 
 template <typename K=string, typename V=int>
 class lexcounter
@@ -381,15 +446,16 @@ public:
   {
     V res=0;
     for (const auto& kv : m) // Fold+ on value list
-      res += kv.second.second;
+      res +=  kv.second.second;
     return res;
   }
 
   void join(const lexcounter<K,V>& o)
   {
     for (const auto& okv : o.m)
-//      m[okv.first]=lexjoin(okv.second,m[okv.first]); 
-//      CBM: fix maxorder first to make it work
+      m[okv.first]=lexjoin(okv.second,m[okv.first]); 
+//      CBM: fix maxord first to make it work
+      /*
     {
         if (m[okv.first].first < okv.second.first) // update it
           m[okv.first]=okv.second;
@@ -399,6 +465,7 @@ public:
         }
         // othwerwise (>) dont update
     }
+    */
   }
 
   friend ostream &operator<<( ostream &output, const lexcounter<K,V>& o)
@@ -873,22 +940,20 @@ public:
   }
 };
 
-
+// U is timestamp, T is payload
 template<typename U, typename T>
 class rwlwwset // remove wins bias for identical timestamps
 {
 private:
-  map<T,pair<maxord<U>, maxord<bool> > > s;
+  map<T,pair<U,bool> > s;
 
   rwlwwset<U,T> addrmv(const U& ts, const T& val, bool b)
   {
     rwlwwset<U,T> res;
-    pair<maxord<U>, maxord<bool> > a;
-    a.first.write(ts);
-    a.second.write(b); // false means its in
-    res.s.insert(pair<T,pair<maxord<U>, maxord<bool> > >(val,a));
-    pair<typename map<T,pair<maxord<U>, maxord<bool> > >::iterator,bool> ret;
-    ret=s.insert(pair<T,pair<maxord<U>, maxord<bool> > >(val,a));
+    pair<U,bool> a(ts,b);
+    res.s.insert(pair<T,pair<U,bool> >(val,a));
+    pair<typename map<T,pair<U,bool> >::iterator,bool> ret;
+    ret=s.insert(pair<T,pair<U,bool> >(val,a));
     if (ret.second == false ) // some value there
     {
         s.at(ret.first->first)=lexjoin(ret.first->second,a);
@@ -900,12 +965,10 @@ public:
 
   friend ostream &operator<<( ostream &output, const rwlwwset<U,T>& o)
   { 
-    maxord<bool> t;
-    t.write(false);
     output << "RW LWWSet: ( ";
-    for(typename  map<T,pair<maxord<U>, maxord<bool> >>::const_iterator it=o.s.begin(); it != o.s.end(); ++it)
+    for(typename  map< T,pair<U,bool> >::const_iterator it=o.s.begin(); it != o.s.end(); ++it)
     {
-      if( it->second.second == t)
+      if( it->second.second == false)
         output << it->first << " ";
     }
     output << ")" << endl;
@@ -925,10 +988,8 @@ public:
 
   bool in (const T& val) 
   { 
-    maxord<bool> t;
-    t.write(true);
-    typename  map<T,pair<maxord<U>, maxord<bool> >>::const_iterator it=s.find(val); 
-    if ( it == s.end() || it->second.second == t)
+    typename  map<T,pair<U,bool> >::const_iterator it=s.find(val); 
+    if ( it == s.end() || it->second.second == true)
       return false;
     else
       return true;
@@ -938,8 +999,8 @@ public:
   {
     if (this == &o) return; // Join is idempotent, but just dont do it.
     // will iterate over the two sorted sets to compute join
-    typename  map<T,pair<maxord<U>, maxord<bool> >>::iterator it; 
-    typename  map<T,pair<maxord<U>, maxord<bool> >>::const_iterator ito; 
+    typename  map< T, pair<U,bool> >::iterator it; 
+    typename  map< T, pair<U,bool> >::const_iterator ito; 
     it=s.begin(); ito=o.s.begin();
     do 
     {
