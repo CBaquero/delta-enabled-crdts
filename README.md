@@ -165,6 +165,16 @@ The example bellow uses the GSets, but any other valid CRDT types could be compo
 
   cout << c << endl; // (GSet: ( 0 1 ),GSet: ( a x y ))
 ```
+
+A special use of pairs is when the first elements are comparable in a total order (int, float, bool, double, ...). In that case a special lexicographic join can be used as alternative to join. It compares the first elements and when one is higher it dictates the whole winning pair. On ties a join is performed on the second elements. The example also shows that primitive type numbers can be joined (by taking their max). 
+
+```cpp
+  pair<int,float> lww_a(12,42), lww_b(20,3.1415);
+
+  cout << join(lww_a,lww_b) << endl; // (20,42)
+  cout << lexjoin(lww_a,lww_b) << endl; // (20,3.1415)
+```
+
 Keep tuned for more datatype examples soon ...
 
 Additional information

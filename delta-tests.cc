@@ -453,7 +453,14 @@ void example_pair()
   c=join(a,b);
 
   cout << c << endl; // (GSet: ( 0 1 ),GSet: ( a x y ))
-  
+}
+
+void example_lexpair()
+{
+  pair<int,float> lww_a(12,42), lww_b(20,3.1415);
+
+  cout << join(lww_a,lww_b) << endl; // (20,42)
+  cout << lexjoin(lww_a,lww_b) << endl; // (20,3.1415)
 }
 
 int main(int argc, char * argv[])
@@ -480,6 +487,7 @@ int main(int argc, char * argv[])
   example_gset();
   example_twopset();
   example_pair();
+  example_lexpair();
 
 //  benchmark1();
 
