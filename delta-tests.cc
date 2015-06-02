@@ -463,6 +463,25 @@ void example_lexpair()
   cout << lexjoin(lww_a,lww_b) << endl; // (20,3.1415)
 }
 
+void example_gcounter()
+{
+  gcounter<unsigned int> x("x"),y("y"),z("z");
+
+  x.inc(); x.inc();
+  y.inc(2);
+  z.join(x); z.join(y);
+  
+  cout << z.read() << endl; // 4
+
+  x.inc(2);
+  z.inc(2);
+  z.join(x);
+  z.join(x);
+
+  cout << z.read() << endl; // 8
+  cout << z << endl; // GCounter: ( x->4 y->2 z->2 ) 
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -488,6 +507,7 @@ int main(int argc, char * argv[])
   example_twopset();
   example_pair();
   example_lexpair();
+  example_gcounter();
 
 //  benchmark1();
 
