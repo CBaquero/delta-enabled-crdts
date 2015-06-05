@@ -32,6 +32,9 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <chrono>
+//#define NDEBUG  // Uncoment do stop testing asserts
+#include <assert.h>
 #include "delta-crdts.cc"
 
 using namespace std;
@@ -168,6 +171,8 @@ void test_aworset()
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.in('c') << o3.in('b') << endl;
+
+  assert (o3.in('c') == true &&  o3.in('b') == true);
 
   aworset<string> o5("idz");
   o5.add("hello");
@@ -398,20 +403,42 @@ void test_dwflag()
 void benchmark1()
 {
   aworset<int,char> g('i');
+//  twopset<int> g;
 
-  const long double TimeBefore = time(0);
+  using namespace std::chrono;
 
-  for(int i=1; i < 20000; i++) // 100k
+  steady_clock::time_point t1 = steady_clock::now();
+
+  //const long double TimeBefore = time(0);
+
+  for(int i=1; i < 1000; i++) // 1k
+  {
+    g.add(i);
+  }
+  for(int i=1; i < 1000; i+=2) // 1k
+  {
+    g.rmv(i);
+  }
+  for(int i=999; i > 0; i--) // 1k
   {
     g.add(i);
   }
 
+  steady_clock::time_point t2 = steady_clock::now();
+
+  duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+
+  std::cout << "It took me " << time_span.count() << " seconds.";
+  std::cout << std::endl;
+
   cout << g.in(0) << endl;
   cout << g.in(10) << endl;
 
+  /*
   const long double TimeAfter = time(0);
 
   cout << "Elapsed System Time in Seconds is " << TimeAfter-TimeBefore << "." << endl;
+  */
 }
 
 void example_gset()
@@ -509,7 +536,22 @@ int main(int argc, char * argv[])
   example_lexpair();
   example_gcounter();
 
-//  benchmark1();
+  dotcontext<char> dc;
+  dc.compact();
+  dc.makedot('x');
+  dc.makedot('x');
+  dc.makedot('y');
+
+  cout << dc << endl;
+
+  dotcontext<char> dc2;
+
+  dc2.join(dc);
+
+  cout << dc2 << endl;
+
+
+  benchmark1();
 
 
 }
