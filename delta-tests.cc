@@ -536,22 +536,25 @@ int main(int argc, char * argv[])
   example_lexpair();
   example_gcounter();
 
+  /*
   dotcontext<char> dc;
-  dc.compact();
-  dc.makedot('x');
-  dc.makedot('x');
-  dc.makedot('y');
+  dotkernel<string,char> dk1;
+  dotkernel<string,char> dk2;
+  dk2.join(dk1);
 
-  cout << dc << endl;
+  dk1.add('x',"red");
+  dk2.add('y',"blue");
+  dk1.add('x',"red");
+  dk2.add('y',"blue");
 
-  dotcontext<char> dc2;
+  cout << dk1 << endl;
+  cout << dk2 << endl;
 
-  dc2.join(dc);
-
-  cout << dc2 << endl;
+  cout << join(dk1,dk2) << endl;
 
 
   benchmark1();
+  */
 
 
 }
