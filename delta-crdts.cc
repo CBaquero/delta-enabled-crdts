@@ -163,68 +163,6 @@ public:
 
 };
 
-template<typename T>
-class twopset
-{
-private:
-  set<T> s;
-  set<T> t;  // removed elements are added to t and removed from s
-
-public:
-
-  set<T> read () { return s; }
-
-  bool operator == ( const twopset<T>& o ) const 
-  { 
-    return s==o.s && t==o.t; 
-  }
-
-  bool in (const T& val) 
-  { 
-    return s.count(val);
-  }
-
-  friend ostream &operator<<( ostream &output, const twopset<T>& o)
-  { 
-    output << "2PSet: S" << o.s << " T " << o.t;
-    return output;            
-  }
-
-  twopset<T> add (const T& val) 
-  { 
-    twopset<T> res;
-    if (t.count(val) == 0) // only add if not in tombstone set
-    {
-      s.insert(val);
-      res.s.insert(val); 
-    }
-    return res; 
-  }
-
-  twopset<T> rmv (const T& val) 
-  { 
-    twopset<T> res;
-    s.erase(val);
-    t.insert(val); // add to tombstones
-    res.t.insert(val); 
-    return res; 
-  }
-
-  void join (const twopset<T>& o)
-  {
-    for (const auto& ot : o.t) // see other tombstones
-    {
-      t.insert(ot); // insert them locally
-      if (s.count(ot) == 1) // remove val if present
-        s.erase(ot);
-    }
-    for (const auto& os : o.s) // add other vals, if not tombstone
-    {
-      if (t.count(os) == 0) s.insert(os);
-    }
-  }
-};
-
 template <typename V=int, typename K=string>
 class gcounter
 {
@@ -612,6 +550,19 @@ public:
     return res;
   }
 
+  dotkernel<T,K> rmv (const pair<K,int>& dot)  // remove a dots 
+  {
+    dotkernel<T,K> res;
+    auto dsit=ds.find(dot);
+    if (dsit != ds.end()) // found it
+    {
+      res.c.insertdot(dsit->first,false); // result knows removed dots
+      ds.erase(dsit++);
+    }
+    res.c.compact(); // Atempt compactation
+    return res;
+  }
+
   dotkernel<T,K> rmv ()  // remove all dots 
   {
     dotkernel<T,K> res;
@@ -624,6 +575,73 @@ public:
 
 };
 
+template<typename T>
+class twopset
+{
+private:
+  set<T> s;
+  set<T> t;  // removed elements are added to t and removed from s
+
+public:
+
+  twopset() {}
+  twopset(string id, dotcontext<string> &jointdc) {}
+
+  set<T> read () { return s; }
+
+  bool operator == ( const twopset<T>& o ) const 
+  { 
+    return s==o.s && t==o.t; 
+  }
+
+  bool in (const T& val) 
+  { 
+    return s.count(val);
+  }
+
+  friend ostream &operator<<( ostream &output, const twopset<T>& o)
+  { 
+    output << "2PSet: S" << o.s << " T " << o.t;
+    return output;            
+  }
+
+  twopset<T> add (const T& val) 
+  { 
+    twopset<T> res;
+    if (t.count(val) == 0) // only add if not in tombstone set
+    {
+      s.insert(val);
+      res.s.insert(val); 
+    }
+    return res; 
+  }
+
+  twopset<T> rmv (const T& val) 
+  { 
+    twopset<T> res;
+    s.erase(val);
+    t.insert(val); // add to tombstones
+    res.t.insert(val); 
+    return res; 
+  }
+
+  void join (const twopset<T>& o)
+  {
+    for (const auto& ot : o.t) // see other tombstones
+    {
+      t.insert(ot); // insert them locally
+      if (s.count(ot) == 1) // remove val if present
+        s.erase(ot);
+    }
+    for (const auto& os : o.s) // add other vals, if not tombstone
+    {
+      if (t.count(os) == 0) s.insert(os);
+    }
+  }
+};
+
+
+//template<typename E, typename K=string, dotcontext<K> c=dotcontext<K>()>
 template<typename E, typename K=string>
 class aworset    // Add-Wins Observed-Remove Set
 {
@@ -634,6 +652,7 @@ private:
 public:
   aworset() {} // Only for deltas and those should not be mutated
   aworset(K k) : id(k) {} // Mutable replicas need a unique id
+  aworset(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
 
   friend ostream &operator<<( ostream &output, const aworset<E,K>& o)
   { 
@@ -794,11 +813,15 @@ public:
   set<V> read ()
   {
     set<V> s;
+    /*
     typename  map<pair<K,int>,V>::iterator dsit;
     for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
     {
       s.insert(dsit->second);
     }
+    */
+    for (const auto & dse : dk.ds)
+      s.insert(dse.second);
     return s;
   }
 
@@ -1036,7 +1059,134 @@ public:
   }
 };
 
-template<typename K, typename V>
-class awormap
+template<typename N, typename V, typename K=string>
+class ormap
 {
+  map<N,V> m;  
+  
+  dotcontext<K> cbase;
+  dotcontext<K> & c;
+  K id;
+
+  public:
+  // if no causal context supplied, used base one
+  ormap() : c(cbase) {} 
+  // if supplied, use a shared causal context
+  ormap(K i, dotcontext<K> &jointc) : id(i), c(jointc) {} 
+
+  V& operator[] (const N& n)
+  {
+    auto i = m.find(n);
+    if (i == m.end()) // 1st key access
+    {
+      auto ins = m.insert(i,pair<N,V>(n,V(id,c)));
+      return ins->second;
+
+    }
+    else
+    {
+      return i->second;
+    }
+
+    //return m[n];
+  }
+
+  void join (const ormap<N,V> & o)
+  {
+    for (const auto & kv : o.m)
+      (*this)[kv.first].join(kv.second);
+    /*
+    {
+      auto i = m.find(kv.first);
+      if (i == m.end()) // 1st key access
+      {
+        auto ins = m.insert(i,pair<N,V>(kv.first,V(id,c)));
+        ins->second.join(kv.second);
+      }
+      else
+        i->second.join(kv.second);
+    }
+    */
+//      m[kv.first].join(kv.second);
+
+  }
+
+};
+
+template<typename V, typename K=string>
+class ccounter    // Disable-Wins Flag
+{
+private:
+  // To re-use the kernel there is an artificial need for dot-tagged bool payload
+  dotkernel<V,K> dk; // Dot kernel
+  K id;
+
+public:
+  ccounter() {} // Only for deltas and those should not be mutated
+  ccounter(K k) : id(k) {} // Mutable replicas need a unique id
+
+  friend ostream &operator<<( ostream &output, const ccounter<V,K>& o)
+  { 
+    output << "CausalCounter:" << o.dk;
+    return output;            
+  }
+
+  ccounter<V,K> inc (const V& val=1) 
+  {
+    ccounter<V,K> r;
+    set<pair<K,int>> dots; // dots to remove, should be only 1
+    V base = {}; // typically 0
+    for(const auto & dsit : dk.ds)
+    {
+      if (dsit.first.first == id) // there should be a single one such
+      {
+        base=max(base,dsit.second);
+        dots.insert(dsit.first);
+      }
+    }
+    for(const auto & dot : dots)
+      r.dk.join(dk.rmv(dot));
+    r.dk.join(dk.add(id,base+val));
+    return r;
+  }
+
+  ccounter<V,K> dec (const V& val=1) 
+  {
+    ccounter<V,K> r;
+    set<pair<K,int>> dots; // dots to remove, should be only 1
+    V base = {}; // typically 0
+    for(const auto & dsit : dk.ds)
+    {
+      if (dsit.first.first == id) // there should be a single one such
+      {
+        base=max(base,dsit.second);
+        dots.insert(dsit.first);
+      }
+    }
+    for(const auto & dot : dots)
+      r.dk.join(dk.rmv(dot));
+    r.dk.join(dk.add(id,base-val));
+    return r;
+  }
+
+  ccounter<V,K> reset () 
+  {
+    ccounter<V,K> r;
+    r.dk=dk.rmv(); 
+    return r;
+  }
+
+  V read ()
+  {
+    V v = {}; // Usually 0
+    for (const auto & dse : dk.ds)
+      v+=dse.second;
+    return v;
+  }
+
+  void join (ccounter<V,K> o)
+  {
+    dk.join(o.dk);
+  }
+
 };

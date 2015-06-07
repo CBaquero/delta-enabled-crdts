@@ -536,6 +536,54 @@ int main(int argc, char * argv[])
   example_lexpair();
   example_gcounter();
 
+  
+  ormap<string,twopset<string>> m1,m2;
+  m1["color"].add("red");
+  m1["color"].add("blue");
+  m2["taste"].add("bitter");
+  m2["color"].add("green");
+  m1.join(m2);
+  cout << m1["color"] << endl;
+  cout << m1["taste"] << endl;
+ 
+
+  dotcontext<string> dc;
+  aworset<int> s1("x",dc),s2("x",dc);
+  s1.add(1); s2.add(2);
+  cout << s1 << endl;
+  cout << s2 << endl;
+
+
+  dotcontext<string> dc2;
+  ormap<string,aworset<string>> m3("x",dc),m4("y",dc2);
+  m3["color"].add("red");
+  m3["color"].add("blue");
+  m4["color"].add("green");
+  cout << m3["color"] << endl;
+  cout << m4["color"] << endl;
+  m3.join(m4);
+  cout << m3["color"] << endl;
+  m3["color"].rmv("green");
+  m3.join(m4);
+  cout << m3["color"] << endl;
+
+  ccounter<int> cc1("x"),cc2("y");
+  cc1.inc(10);
+  cc2.join(cc1);
+  cc2.inc(10);
+  cout << cc1 << endl;
+  cc1.inc();
+  cout << cc1 << endl;
+  cc1.dec();
+  cout << cc1 << endl;
+  cc1.reset();
+  cout << cc1 << endl;
+  cout << cc1.read() << endl;
+  cc1.inc(5);
+  cc1.join(cc2);
+  cout << cc1 << endl;
+  cout << cc1.read() << endl;
+
   /*
   dotcontext<char> dc;
   dotkernel<string,char> dk1;
