@@ -542,8 +542,10 @@ int main(int argc, char * argv[])
   m1["color"].add("blue");
   m2["taste"].add("bitter");
   m2["color"].add("green");
+  cout << m2["taste"] << endl;
   m1.join(m2);
   cout << m1["color"] << endl;
+  m1.erase("taste");
   cout << m1["taste"] << endl;
  
 
@@ -583,6 +585,7 @@ int main(int argc, char * argv[])
   cc1.join(cc2);
   cout << cc1 << endl;
   cout << cc1.read() << endl;
+   
 
   /*
   dotcontext<char> dc;

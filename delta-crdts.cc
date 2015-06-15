@@ -315,7 +315,7 @@ public:
 
 };
 
-// Autonomous causal context, for future map embeding
+// Autonomous causal context, for context sharing in maps
 template<typename K>
 class dotcontext
 {
@@ -1069,7 +1069,7 @@ class ormap
   K id;
 
   public:
-  // if no causal context supplied, used base one
+  // if no causal context supplied, use base one
   ormap() : c(cbase) {} 
   // if supplied, use a shared causal context
   ormap(K i, dotcontext<K> &jointc) : id(i), c(jointc) {} 
@@ -1087,9 +1087,30 @@ class ormap
     {
       return i->second;
     }
-
-    //return m[n];
   }
+
+  /*
+  ormap<N,V,K> insert(const pair<N,V> & nv)
+  {
+    ormap<N,V,K> r;
+    // insert always overwrites existing payloads, but keep context
+    auto ins = m.insert(pair<N,V>(nv.first,V(id,c))); // bind context
+    ins->second.join(nv.second); // join to \bottom
+    // make delta
+    return r;
+  }
+  */
+
+  ormap<N,V,K> erase(const N & n)
+  {
+    ormap<N,V,K> r;
+    // need to collect erased dots, and list then in r context
+
+    // now erase
+    m.erase(n);
+    return r;
+  }
+
 
   void join (const ormap<N,V> & o)
   {
@@ -1114,7 +1135,7 @@ class ormap
 };
 
 template<typename V, typename K=string>
-class ccounter    // Disable-Wins Flag
+class ccounter    // Causal counter, variation of Riak_dt_emcntr and lexcounter 
 {
 private:
   // To re-use the kernel there is an artificial need for dot-tagged bool payload
@@ -1124,6 +1145,7 @@ private:
 public:
   ccounter() {} // Only for deltas and those should not be mutated
   ccounter(K k) : id(k) {} // Mutable replicas need a unique id
+  ccounter(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
 
   friend ostream &operator<<( ostream &output, const ccounter<V,K>& o)
   { 
@@ -1169,7 +1191,7 @@ public:
     return r;
   }
 
-  ccounter<V,K> reset () 
+  ccounter<V,K> reset () // Other nodes might however upgrade their counts
   {
     ccounter<V,K> r;
     r.dk=dk.rmv(); 
