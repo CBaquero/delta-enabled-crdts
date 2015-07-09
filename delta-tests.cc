@@ -536,7 +536,7 @@ int main(int argc, char * argv[])
   example_lexpair();
   example_gcounter();
 
-  
+ 
   ormap<string,twopset<string>> m1,m2;
   m1["color"].add("red");
   m1["color"].add("blue");
@@ -547,6 +547,7 @@ int main(int argc, char * argv[])
   cout << m1["color"] << endl;
   m1.erase("taste");
   cout << m1["taste"] << endl;
+ 
  
 
   dotcontext<string> dc;
@@ -589,14 +590,21 @@ int main(int argc, char * argv[])
   ormap<string,aworset<string>> m5("x"),m6("y");
   m5["color"].add("red");
   m5["taste"].add("bitter");
+  m6["sound"].add("loud");
   m6["color"].add("blue");
+  cout << "m5 " << m5 << endl;
+  cout << "m6 " << m6 << endl;
   m5.join(m6);
-  cout << m5 << endl;
+  cout << "m5 " << m5 << endl;
+  m6.erase("sound");
+  cout << "m6 " << m6 << endl;
   m5.join(m6);
-  cout << m5 << endl;
+  cout << "m5 " << m5 << endl;
   cout << m5.erase("color");
   cout << m5.reset();
-  cout << m5 << endl;
+  cout << "m5 " << m5 << endl;
+  m5.join(m6);
+  cout << "m5 " << m5 << endl;
   cout << "--- Map F ---" << endl;
 
   ormap<int,ormap<string,aworset<string>>> m7("x");

@@ -680,6 +680,7 @@ public:
   aworset() {} // Only for deltas and those should not be mutated
   aworset(K k) : id(k) {} // Mutable replicas need a unique id
   aworset(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  //aworset(K k, dotcontext<K> &jointc, aworset<E,K> &o) : id(k), dk(jointc) {} 
 
   friend ostream &operator<<( ostream &output, const aworset<E,K>& o)
   { 
@@ -1122,7 +1123,7 @@ class ormap
     return output;            
   }
 
-  dotcontext<K> & context()
+  dotcontext<K> & context() const
   {
     return c;
   }
@@ -1189,8 +1190,80 @@ class ormap
 
   void join (const ormap<N,V> & o)
   {
+    const dotcontext<K> ic=c; // need access to an immutable context
+
+    /*
+    // join over other keys
     for (const auto & kv : o.m)
-      (*this)[kv.first].join(kv.second);
+    {
+      // (*this)[kv.first].join(kv.second);
+      dotcontext<K> iic=ic; // make a fresh discardable context
+      ormap<N,V,K> mm(id,iic);
+      mm[kv.first]=(*this)[kv.first];
+      mm.c=ic; // context is tainted, restore it
+      mm[kv.first].join(kv.second);
+      (*this)[kv.first]=mm[kv.first];
+
+    }
+    */
+
+    // join all keys
+    auto mit=m.begin(); auto mito=o.m.begin();
+    do 
+    {
+      if (mit != m.end() && (mito == o.m.end() || mit->first < mito->first))
+      {
+        // cout << "cc one\n";
+        // entry only at here
+        
+        V empty(id,o.context());
+        mit->second.join(empty);
+
+        ++mit;
+      }
+      else if (mito != o.m.end() && (mit == m.end() || mito->first < mit->first))
+      {
+        // cout << "cc two\n";
+        // entry only at other
+        dotcontext<K> iic=ic; // make a fresh discardable context
+        ormap<N,V,K> mm(id,iic);
+        mm[mito->first].join(mito->second);
+        (*this)[mito->first]=mm[mito->first];
+
+        ++mito;
+      }
+      else if ( mit != m.end() && mito != o.m.end() )
+      {
+        // cout << "cc three\n";
+        // in both
+        dotcontext<K> iic=ic; // make a fresh discardable context
+        ormap<N,V,K> mm(id,iic);
+        mm[mito->first]=(*this)[mito->first];
+        mm.c=ic; // context is tainted, restore it
+        mm[mito->first].join(mito->second);
+        (*this)[mito->first]=mm[mito->first];
+
+        // cc.at(mit->first)=max(mit->second,mito->second);
+        ++mit; ++mito;
+      }
+    } while (mit != m.end() || mito != o.m.end());
+
+
+    /*  
+    // to optimize, create an empty object with the other map context
+    dotcontext<K> co=o.context();
+    V empty(id,co);
+    // join over own keys not yet tested
+    for (auto & kv : m)
+    {
+      if (o.m.count(kv.first) == 0) // not joined above
+      {
+        kv.second.join(empty);
+      }
+    }
+    */
+    
+
   }
 
 
