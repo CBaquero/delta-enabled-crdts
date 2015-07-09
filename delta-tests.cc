@@ -51,7 +51,7 @@ void test_gset()
   do2.join(o2.add(3)); 
 
   gset<int> o3 = join(o1,o2);
-  gset<int> o4 = join(join(o1,do1),join(o2,do1));
+  gset<int> o4 = join(join(o1,do2),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.in(1) << o3.in(0) << endl;
@@ -555,7 +555,6 @@ int main(int argc, char * argv[])
   cout << s1 << endl;
   cout << s2 << endl;
 
-
   dotcontext<string> dc2;
   ormap<string,aworset<string>> m3("x",dc),m4("y",dc2);
   m3["color"].add("red");
@@ -586,6 +585,18 @@ int main(int argc, char * argv[])
   cout << cc1 << endl;
   cout << cc1.read() << endl;
    
+  cout << "--- Map I ---" << endl;
+  ormap<string,aworset<string>> m5("x"),m6("y");
+  m5["color"].add("red");
+  m5["taste"].add("bitter");
+  m6["color"].add("blue");
+  m5.join(m6);
+  cout << m5 << endl;
+  cout << "Erase I" << m5.erase("color") << "Erase F";
+  cout << m5 << endl;
+  m5.join(m6);
+  cout << m5 << endl;
+  cout << "--- Map F ---" << endl;
 
   /*
   dotcontext<char> dc;

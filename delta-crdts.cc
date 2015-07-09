@@ -125,44 +125,6 @@ ostream &operator<<( ostream &output, const set<T>& o)
   return output;
 }
 
-template<typename T>
-class gset
-{
-private:
-  set<T> s;
-
-public:
-
-  set<T> read () const { return s; }
-
-  bool operator == ( const gset<T>& o ) const { return s==o.s; }
-
-  bool in (const T& val) 
-  { 
-    return s.count(val);
-  }
-
-  friend ostream &operator<<( ostream &output, const gset<T>& o)
-  { 
-    output << "GSet: " << o.s;
-    return output;            
-  }
-
-  gset<T> add (const T& val) 
-  { 
-    gset<T> res;
-    s.insert(val); 
-    res.s.insert(val); 
-    return res; 
-  }
-
-  void join (const gset<T>& o)
-  {
-    s.insert(o.s.begin(), o.s.end());
-  }
-
-};
-
 template <typename V=int, typename K=string>
 class gcounter
 {
@@ -550,7 +512,7 @@ public:
     return res;
   }
 
-  dotkernel<T,K> rmv (const pair<K,int>& dot)  // remove a dots 
+  dotkernel<T,K> rmv (const pair<K,int>& dot)  // remove a dot 
   {
     dotkernel<T,K> res;
     auto dsit=ds.find(dot);
@@ -575,7 +537,55 @@ public:
 
 };
 
-template<typename T>
+template<typename T, typename K=string>
+class gset
+{
+private:
+  set<T> s;
+
+public:
+
+  gset() {}
+  gset(string id, dotcontext<K> &jointdc) {}
+
+  // For map compliance reply with an empty context
+  dotcontext<K> context()
+  {
+    return dotcontext<K>();
+  }
+
+  set<T> read () const { return s; }
+
+  bool operator == ( const gset<T>& o ) const { return s==o.s; }
+
+  bool in (const T& val) 
+  { 
+    return s.count(val);
+  }
+
+  friend ostream &operator<<( ostream &output, const gset<T>& o)
+  { 
+    output << "GSet: " << o.s;
+    return output;            
+  }
+
+  gset<T> add (const T& val) 
+  { 
+    gset<T> res;
+    s.insert(val); 
+    res.s.insert(val); 
+    return res; 
+  }
+
+  void join (const gset<T>& o)
+  {
+    s.insert(o.s.begin(), o.s.end());
+  }
+
+};
+
+
+template<typename T, typename K=string>
 class twopset
 {
 private:
@@ -585,7 +595,12 @@ private:
 public:
 
   twopset() {}
-  twopset(string id, dotcontext<string> &jointdc) {}
+  twopset(string id, dotcontext<K> &jointdc) {}
+  // For map compliance reply with an empty context
+  dotcontext<K> context()
+  {
+    return dotcontext<K>();
+  }
 
   set<T> read () { return s; }
 
@@ -625,6 +640,18 @@ public:
     return res; 
   }
 
+  twopset<T> reset ()
+  {
+    twopset<T> res;
+    for (auto const & val : s)
+    {
+      t.insert(val);
+      res.t.insert(val); 
+    }
+    s.clear();
+    return res; 
+  }
+
   void join (const twopset<T>& o)
   {
     for (const auto& ot : o.t) // see other tombstones
@@ -658,6 +685,11 @@ public:
   { 
     output << "AWORSet:" << o.dk;
     return output;            
+  }
+
+  dotcontext<K> & context()
+  {
+    return dk.c;
   }
 
   set<E> read ()
@@ -699,6 +731,13 @@ public:
   {
     aworset<E,K> r;
     r.dk=dk.rmv(val); 
+    return r;
+  }
+  
+  aworset<E,K> reset()
+  {
+    aworset<E,K> r;
+    r.dk=dk.rmv(); 
     return r;
   }
 
@@ -1071,8 +1110,22 @@ class ormap
   public:
   // if no causal context supplied, use base one
   ormap() : c(cbase) {} 
+  ormap(K i) : id(i), c(cbase) {} 
   // if supplied, use a shared causal context
   ormap(K i, dotcontext<K> &jointc) : id(i), c(jointc) {} 
+
+  friend ostream &operator<<( ostream &output, const ormap<N,V,K>& o)
+  { 
+    output << "Map:" << o.c << endl;
+    for (const auto & kv : o.m)
+      cout << kv.first << "->" << kv.second << endl;
+    return output;            
+  }
+
+  dotcontext<K> & context()
+  {
+    return c;
+  }
 
   V& operator[] (const N& n)
   {
@@ -1104,10 +1157,15 @@ class ormap
   ormap<N,V,K> erase(const N & n)
   {
     ormap<N,V,K> r;
-    // need to collect erased dots, and list then in r context
-
-    // now erase
-    m.erase(n);
+    if (m.count(n) != 0)
+    {
+      // need to collect erased dots, and list then in r context
+      V v;
+      v=m[n].reset();
+      r.c=v.context();
+      // now erase
+      m.erase(n);
+    }
     return r;
   }
 
@@ -1116,21 +1174,8 @@ class ormap
   {
     for (const auto & kv : o.m)
       (*this)[kv.first].join(kv.second);
-    /*
-    {
-      auto i = m.find(kv.first);
-      if (i == m.end()) // 1st key access
-      {
-        auto ins = m.insert(i,pair<N,V>(kv.first,V(id,c)));
-        ins->second.join(kv.second);
-      }
-      else
-        i->second.join(kv.second);
-    }
-    */
-//      m[kv.first].join(kv.second);
-
   }
+
 
 };
 
