@@ -1169,6 +1169,23 @@ class ormap
     return r;
   }
 
+  ormap<N,V,K> reset()
+  {
+    ormap<N,V,K> r;
+    if (! m.empty())
+    {
+      // need to collect erased dots, and list then in r context
+      for (auto & kv : m)
+      {
+        V v;
+        v=kv.second.reset();
+        r.c.join(v.context());
+      }
+      m.clear();
+    }
+    return r;
+  }
+
 
   void join (const ormap<N,V> & o)
   {

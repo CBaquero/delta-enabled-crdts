@@ -592,11 +592,16 @@ int main(int argc, char * argv[])
   m6["color"].add("blue");
   m5.join(m6);
   cout << m5 << endl;
-  cout << "Erase I" << m5.erase("color") << "Erase F";
-  cout << m5 << endl;
   m5.join(m6);
   cout << m5 << endl;
+  cout << m5.erase("color");
+  cout << m5.reset();
+  cout << m5 << endl;
   cout << "--- Map F ---" << endl;
+
+  ormap<int,ormap<string,aworset<string>>> m7("x");
+  m7[2]["color"].add("red");
+  cout << m7 << endl;
 
   /*
   dotcontext<char> dc;
