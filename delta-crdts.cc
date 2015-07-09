@@ -680,7 +680,6 @@ public:
   aworset() {} // Only for deltas and those should not be mutated
   aworset(K k) : id(k) {} // Mutable replicas need a unique id
   aworset(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
-  //aworset(K k, dotcontext<K> &jointc, aworset<E,K> &o) : id(k), dk(jointc) {} 
 
   friend ostream &operator<<( ostream &output, const aworset<E,K>& o)
   { 
@@ -1225,6 +1224,7 @@ class ormap
       {
         // cout << "cc two\n";
         // entry only at other
+
         dotcontext<K> iic=ic; // make a fresh discardable context
         ormap<N,V,K> mm(id,iic);
         mm[mito->first].join(mito->second);
@@ -1243,7 +1243,6 @@ class ormap
         mm[mito->first].join(mito->second);
         (*this)[mito->first]=mm[mito->first];
 
-        // cc.at(mit->first)=max(mit->second,mito->second);
         ++mit; ++mito;
       }
     } while (mit != m.end() || mito != o.m.end());
