@@ -37,20 +37,6 @@
 
 using namespace std;
 
-//template<typename T> // Join two objects, deriving a new one
-//T join(const T& l, const T& r) // assuming copy constructor
-//{
-//  T res;
-//  res=l;
-//  res.join(r);
-//  return res;
-//}
-
-//int join(const int & l, const int & r)
-//{
-//  return max(l,r);
-//}
-
 template< bool b > 
 struct join_selector { 
   template< typename T > 
@@ -124,158 +110,6 @@ ostream &operator<<( ostream &output, const set<T>& o)
   output << ")";
   return output;
 }
-
-template <typename V=int, typename K=string>
-class gcounter
-{
-private:
-  map<K,V> m;
-  K id;
-
-public:
-  gcounter() {} // Only for deltas and those should not be mutated
-  gcounter(K a) : id(a) {} // Mutable replicas need a unique id
-
-  gcounter inc(V tosum={1}) // argument is optional
-  {
-    gcounter<V,K> res;
-    m[id]+=tosum;
-    res.m[id]=m[id];
-    return res;
-  }
-
-  bool operator == ( const gcounter<V,K>& o ) const 
-  { 
-    return m==o.m; 
-  }
-
-  V read() const // get counter value
-  {
-    V res=0;
-    for (const auto& kv : m) // Fold+ on value list
-      res += kv.second;
-    return res;
-  }
-
-  void join(const gcounter<V,K>& o)
-  {
-    for (const auto& okv : o.m)
-      m[okv.first]=max(okv.second,m[okv.first]);
-  }
-
-  friend ostream &operator<<( ostream &output, const gcounter<V,K>& o)
-  { 
-    output << "GCounter: ( ";
-    for (const auto& kv : o.m)
-      output << kv.first << "->" << kv.second << " ";
-    output << ")";
-    return output;            
-  }
-
-};
-
-template <typename V=int, typename K=string>
-class pncounter
-{
-private:
-  gcounter<V,K> p,n;
-
-public:
-  pncounter() {} // Only for deltas and those should not be mutated
-  pncounter(K a) : p(a), n(a) {} // Mutable replicas need a unique id
-
-  pncounter inc(V tosum={1}) // Argument is optional
-  {
-    pncounter<V,K> res;
-    res.p = p.inc(tosum); 
-    return res;
-  }
-
-  pncounter dec(V tosum={1}) // Argument is optional
-  {
-    pncounter<V,K> res;
-    res.n = n.inc(tosum); 
-    return res;
-  }
-
-
-  V read() // get counter value
-  {
-    V res=p.read()-n.read();
-    return res;
-  }
-
-  void join(const pncounter& o)
-  {
-    p.join(o.p);
-    n.join(o.n);
-  }
-
-  friend ostream &operator<<( ostream &output, const pncounter<V,K>& o)
-  { 
-    output << "PNCounter:P:" << o.p << " PNCounter:N:" << o.n;
-    return output;            
-  }
-
-};
-
-template <typename V=int, typename K=string>
-class lexcounter
-{
-private:
-  map<K,pair<int,V> > m;
-  K id;
-
-public:
-  lexcounter() {} // Only for deltas and those should not be mutated
-  lexcounter(K a) : id(a) {} // Mutable replicas need a unique id
-
-  lexcounter inc(V tosum=1) // Argument is optional
-  {
-    lexcounter<V,K> res;
-
-//    m[id].first+=1; // optional
-    m[id].second+=tosum;
-    res.m[id]=m[id];
-
-    return res;
-  }
-
-  lexcounter dec(V tosum=1) // Argument is optional
-  {
-    lexcounter<V,K> res;
-
-    m[id].first+=1; // mandatory
-    m[id].second-=tosum;
-    res.m[id]=m[id];
-
-    return res;
-  }
-
-  V read() const // get counter value
-  {
-    V res=0;
-    for (const auto& kv : m) // Fold+ on value list
-      res +=  kv.second.second;
-    return res;
-  }
-
-  void join(const lexcounter<V,K>& o)
-  {
-    for (const auto& okv : o.m)
-      m[okv.first]=lexjoin(okv.second,m[okv.first]); 
-  }
-
-  friend ostream &operator<<( ostream &output, const lexcounter<V,K>& o)
-  { 
-    output << "LexCounter: ( ";
-    for (const auto& kv : o.m)
-      output << kv.first << "->" << kv.second << " ";
-    output << ")";
-    return output;            
-  }
-
-};
 
 // Autonomous causal context, for context sharing in maps
 template<typename K>
@@ -533,6 +367,237 @@ public:
     res.c.compact();
     ds.clear(); // Clear the payload, but remember context
     return res;
+  }
+
+};
+
+template <typename V=int, typename K=string>
+class gcounter
+{
+private:
+  map<K,V> m;
+  K id;
+
+public:
+  gcounter() {} // Only for deltas and those should not be mutated
+  gcounter(K a) : id(a) {} // Mutable replicas need a unique id
+
+  gcounter inc(V tosum={1}) // argument is optional
+  {
+    gcounter<V,K> res;
+    m[id]+=tosum;
+    res.m[id]=m[id];
+    return res;
+  }
+
+  bool operator == ( const gcounter<V,K>& o ) const 
+  { 
+    return m==o.m; 
+  }
+
+  V read() const // get counter value
+  {
+    V res=0;
+    for (const auto& kv : m) // Fold+ on value list
+      res += kv.second;
+    return res;
+  }
+
+  void join(const gcounter<V,K>& o)
+  {
+    for (const auto& okv : o.m)
+      m[okv.first]=max(okv.second,m[okv.first]);
+  }
+
+  friend ostream &operator<<( ostream &output, const gcounter<V,K>& o)
+  { 
+    output << "GCounter: ( ";
+    for (const auto& kv : o.m)
+      output << kv.first << "->" << kv.second << " ";
+    output << ")";
+    return output;            
+  }
+
+};
+
+template <typename V=int, typename K=string>
+class pncounter
+{
+private:
+  gcounter<V,K> p,n;
+
+public:
+  pncounter() {} // Only for deltas and those should not be mutated
+  pncounter(K a) : p(a), n(a) {} // Mutable replicas need a unique id
+
+  pncounter inc(V tosum={1}) // Argument is optional
+  {
+    pncounter<V,K> res;
+    res.p = p.inc(tosum); 
+    return res;
+  }
+
+  pncounter dec(V tosum={1}) // Argument is optional
+  {
+    pncounter<V,K> res;
+    res.n = n.inc(tosum); 
+    return res;
+  }
+
+
+  V read() // get counter value
+  {
+    V res=p.read()-n.read();
+    return res;
+  }
+
+  void join(const pncounter& o)
+  {
+    p.join(o.p);
+    n.join(o.n);
+  }
+
+  friend ostream &operator<<( ostream &output, const pncounter<V,K>& o)
+  { 
+    output << "PNCounter:P:" << o.p << " PNCounter:N:" << o.n;
+    return output;            
+  }
+
+};
+
+template <typename V=int, typename K=string>
+class lexcounter
+{
+private:
+  map<K,pair<int,V> > m;
+  K id;
+
+public:
+  lexcounter() {} // Only for deltas and those should not be mutated
+  lexcounter(K a) : id(a) {} // Mutable replicas need a unique id
+
+  lexcounter inc(V tosum=1) // Argument is optional
+  {
+    lexcounter<V,K> res;
+
+//    m[id].first+=1; // optional
+    m[id].second+=tosum;
+    res.m[id]=m[id];
+
+    return res;
+  }
+
+  lexcounter dec(V tosum=1) // Argument is optional
+  {
+    lexcounter<V,K> res;
+
+    m[id].first+=1; // mandatory
+    m[id].second-=tosum;
+    res.m[id]=m[id];
+
+    return res;
+  }
+
+  V read() const // get counter value
+  {
+    V res=0;
+    for (const auto& kv : m) // Fold+ on value list
+      res +=  kv.second.second;
+    return res;
+  }
+
+  void join(const lexcounter<V,K>& o)
+  {
+    for (const auto& okv : o.m)
+      m[okv.first]=lexjoin(okv.second,m[okv.first]); 
+  }
+
+  friend ostream &operator<<( ostream &output, const lexcounter<V,K>& o)
+  { 
+    output << "LexCounter: ( ";
+    for (const auto& kv : o.m)
+      output << kv.first << "->" << kv.second << " ";
+    output << ")";
+    return output;            
+  }
+
+};
+
+template<typename V, typename K=string>
+class ccounter    // Causal counter, variation of Riak_dt_emcntr and lexcounter 
+{
+private:
+  // To re-use the kernel there is an artificial need for dot-tagged bool payload
+  dotkernel<V,K> dk; // Dot kernel
+  K id;
+
+public:
+  ccounter() {} // Only for deltas and those should not be mutated
+  ccounter(K k) : id(k) {} // Mutable replicas need a unique id
+  ccounter(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+
+  friend ostream &operator<<( ostream &output, const ccounter<V,K>& o)
+  { 
+    output << "CausalCounter:" << o.dk;
+    return output;            
+  }
+
+  ccounter<V,K> inc (const V& val=1) 
+  {
+    ccounter<V,K> r;
+    set<pair<K,int>> dots; // dots to remove, should be only 1
+    V base = {}; // typically 0
+    for(const auto & dsit : dk.ds)
+    {
+      if (dsit.first.first == id) // there should be a single one such
+      {
+        base=max(base,dsit.second);
+        dots.insert(dsit.first);
+      }
+    }
+    for(const auto & dot : dots)
+      r.dk.join(dk.rmv(dot));
+    r.dk.join(dk.add(id,base+val));
+    return r;
+  }
+
+  ccounter<V,K> dec (const V& val=1) 
+  {
+    ccounter<V,K> r;
+    set<pair<K,int>> dots; // dots to remove, should be only 1
+    V base = {}; // typically 0
+    for(const auto & dsit : dk.ds)
+    {
+      if (dsit.first.first == id) // there should be a single one such
+      {
+        base=max(base,dsit.second);
+        dots.insert(dsit.first);
+      }
+    }
+    for(const auto & dot : dots)
+      r.dk.join(dk.rmv(dot));
+    r.dk.join(dk.add(id,base-val));
+    return r;
+  }
+
+  ccounter<V,K> reset () // Other nodes might however upgrade their counts
+  {
+    ccounter<V,K> r;
+    r.dk=dk.rmv(); 
+    return r;
+  }
+
+  V read ()
+  {
+    V v = {}; // Usually 0
+    for (const auto & dse : dk.ds)
+      v+=dse.second;
+    return v;
+  }
+
+  void join (ccounter<V,K> o)
+  {
+    dk.join(o.dk);
   }
 
 };
@@ -1215,6 +1280,8 @@ class ormap
         // cout << "cc one\n";
         // entry only at here
         
+        // creaty and empty payoad with the other context, since it might   
+        // obsolete some local entries. 
         V empty(id,o.context());
         mit->second.join(empty);
 
@@ -1247,102 +1314,8 @@ class ormap
       }
     } while (mit != m.end() || mito != o.m.end());
 
-
-    /*  
-    // to optimize, create an empty object with the other map context
-    dotcontext<K> co=o.context();
-    V empty(id,co);
-    // join over own keys not yet tested
-    for (auto & kv : m)
-    {
-      if (o.m.count(kv.first) == 0) // not joined above
-      {
-        kv.second.join(empty);
-      }
-    }
-    */
-    
-
   }
 
 
 };
 
-template<typename V, typename K=string>
-class ccounter    // Causal counter, variation of Riak_dt_emcntr and lexcounter 
-{
-private:
-  // To re-use the kernel there is an artificial need for dot-tagged bool payload
-  dotkernel<V,K> dk; // Dot kernel
-  K id;
-
-public:
-  ccounter() {} // Only for deltas and those should not be mutated
-  ccounter(K k) : id(k) {} // Mutable replicas need a unique id
-  ccounter(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
-
-  friend ostream &operator<<( ostream &output, const ccounter<V,K>& o)
-  { 
-    output << "CausalCounter:" << o.dk;
-    return output;            
-  }
-
-  ccounter<V,K> inc (const V& val=1) 
-  {
-    ccounter<V,K> r;
-    set<pair<K,int>> dots; // dots to remove, should be only 1
-    V base = {}; // typically 0
-    for(const auto & dsit : dk.ds)
-    {
-      if (dsit.first.first == id) // there should be a single one such
-      {
-        base=max(base,dsit.second);
-        dots.insert(dsit.first);
-      }
-    }
-    for(const auto & dot : dots)
-      r.dk.join(dk.rmv(dot));
-    r.dk.join(dk.add(id,base+val));
-    return r;
-  }
-
-  ccounter<V,K> dec (const V& val=1) 
-  {
-    ccounter<V,K> r;
-    set<pair<K,int>> dots; // dots to remove, should be only 1
-    V base = {}; // typically 0
-    for(const auto & dsit : dk.ds)
-    {
-      if (dsit.first.first == id) // there should be a single one such
-      {
-        base=max(base,dsit.second);
-        dots.insert(dsit.first);
-      }
-    }
-    for(const auto & dot : dots)
-      r.dk.join(dk.rmv(dot));
-    r.dk.join(dk.add(id,base-val));
-    return r;
-  }
-
-  ccounter<V,K> reset () // Other nodes might however upgrade their counts
-  {
-    ccounter<V,K> r;
-    r.dk=dk.rmv(); 
-    return r;
-  }
-
-  V read ()
-  {
-    V v = {}; // Usually 0
-    for (const auto & dse : dk.ds)
-      v+=dse.second;
-    return v;
-  }
-
-  void join (ccounter<V,K> o)
-  {
-    dk.join(o.dk);
-  }
-
-};
