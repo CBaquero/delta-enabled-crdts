@@ -587,7 +587,7 @@ int main(int argc, char * argv[])
   cout << cc1.read() << endl;
    
   cout << "--- Map I ---" << endl;
-  ormap<string,aworset<string>> m5("x"),m6("y");
+  ormap<string,rworset<string>> m5("x"),m6("y");
   m5["color"].add("red");
   m5["taste"].add("bitter");
   m6["sound"].add("loud");

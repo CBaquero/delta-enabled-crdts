@@ -536,6 +536,11 @@ public:
   ccounter(K k) : id(k) {} // Mutable replicas need a unique id
   ccounter(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
 
+  dotcontext<K> & context()
+  {
+    return dk.c;
+  }
+
   friend ostream &operator<<( ostream &output, const ccounter<V,K>& o)
   { 
     output << "CausalCounter:" << o.dk;
@@ -602,7 +607,8 @@ public:
 
 };
 
-template<typename T, typename K=string>
+// template<typename T, typename K=string>
+template<typename T>
 class gset
 {
 private:
@@ -611,13 +617,13 @@ private:
 public:
 
   gset() {}
-  gset(string id, dotcontext<K> &jointdc) {}
+//  gset(string id, dotcontext<K> &jointdc) {}
 
   // For map compliance reply with an empty context
-  dotcontext<K> context()
-  {
-    return dotcontext<K>();
-  }
+//  dotcontext<K> context()
+//  {
+//    return dotcontext<K>();
+//  }
 
   set<T> read () const { return s; }
 
@@ -650,7 +656,7 @@ public:
 };
 
 
-template<typename T, typename K=string>
+template<typename T, typename K=string> // Map embedable datatype
 class twopset
 {
 private:
@@ -733,8 +739,7 @@ public:
 };
 
 
-//template<typename E, typename K=string, dotcontext<K> c=dotcontext<K>()>
-template<typename E, typename K=string>
+template<typename E, typename K=string> // Map embedable datatype
 class aworset    // Add-Wins Observed-Remove Set
 {
 private:
@@ -746,29 +751,23 @@ public:
   aworset(K k) : id(k) {} // Mutable replicas need a unique id
   aworset(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
 
+  dotcontext<K> & context()
+  {
+    return dk.c;
+  }
+
   friend ostream &operator<<( ostream &output, const aworset<E,K>& o)
   { 
     output << "AWORSet:" << o.dk;
     return output;            
   }
 
-  dotcontext<K> & context()
-  {
-    return dk.c;
-  }
 
   set<E> read ()
   {
     set<E> res;
     for (const auto &dv : dk.ds)
       res.insert(dv.second);
-    /*
-    typename map<pair<K,int>,E>::iterator dsit;
-    for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
-    {
-      res.insert(dsit->second);
-    }
-    */
     return res;
   }
 
@@ -814,7 +813,7 @@ public:
   }
 };
 
-template<typename E, typename K=string>
+template<typename E, typename K=string> // Map embedable datatype
 class rworset    // Remove-Wins Observed-Remove Set
 {
 private:
@@ -824,6 +823,13 @@ private:
 public:
   rworset() {} // Only for deltas and those should not be mutated
   rworset(K k) : id(k) {} // Mutable replicas need a unique id
+  rworset(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+
+  dotcontext<K> & context()
+  {
+    return dk.c;
+  }
+
 
   friend ostream &operator<<( ostream &output, const rworset<E,K>& o)
   { 
@@ -880,6 +886,14 @@ public:
     return r;
   }
 
+  rworset<E,K> reset()
+  {
+    rworset<E,K> r;
+    r.dk=dk.rmv(); 
+    return r;
+  }
+
+
   void join (rworset<E,K> o)
   {
     dk.join(o.dk);
@@ -898,6 +912,12 @@ private:
 public:
   mvreg() {} // Only for deltas and those should not be mutated
   mvreg(K k) : id(k) {} // Mutable replicas need a unique id
+  mvreg(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+
+  dotcontext<K> & context()
+  {
+    return dk.c;
+  }
 
   friend ostream &operator<<( ostream &output, const mvreg<V,K>& o)
   { 
@@ -917,16 +937,16 @@ public:
   set<V> read ()
   {
     set<V> s;
-    /*
-    typename  map<pair<K,int>,V>::iterator dsit;
-    for(dsit=dk.ds.begin(); dsit != dk.ds.end();++dsit)
-    {
-      s.insert(dsit->second);
-    }
-    */
     for (const auto & dse : dk.ds)
       s.insert(dse.second);
     return s;
+  }
+
+  mvreg<V,K> reset()
+  {
+    mvreg<V,K> r;
+    r.dk=dk.rmv(); 
+    return r;
   }
 
   void join (mvreg<V,K> o)
@@ -947,6 +967,12 @@ private:
 public:
   ewflag() {} // Only for deltas and those should not be mutated
   ewflag(K k) : id(k) {} // Mutable replicas need a unique id
+  ewflag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+
+  dotcontext<K> & context()
+  {
+    return dk.c;
+  }
 
   friend ostream &operator<<( ostream &output, const ewflag<K>& o)
   { 
@@ -980,6 +1006,13 @@ public:
     return r;
   }
 
+  ewflag<K> reset()
+  {
+    ewflag<K> r;
+    r.dk=dk.rmv(); 
+    return r;
+  }
+
   void join (ewflag<K> o)
   {
     dk.join(o.dk);
@@ -997,6 +1030,12 @@ private:
 public:
   dwflag() {} // Only for deltas and those should not be mutated
   dwflag(K k) : id(k) {} // Mutable replicas need a unique id
+  dwflag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+
+  dotcontext<K> & context()
+  {
+    return dk.c;
+  }
 
   friend ostream &operator<<( ostream &output, const dwflag<K>& o)
   { 
@@ -1027,6 +1066,13 @@ public:
   {
     dwflag<K> r;
     r.dk=dk.rmv(false); 
+    return r;
+  }
+
+  dwflag<K> reset()
+  {
+    dwflag<K> r;
+    r.dk=dk.rmv(); 
     return r;
   }
 
@@ -1207,18 +1253,6 @@ class ormap
     }
   }
 
-  /*
-  ormap<N,V,K> insert(const pair<N,V> & nv)
-  {
-    ormap<N,V,K> r;
-    // insert always overwrites existing payloads, but keep context
-    auto ins = m.insert(pair<N,V>(nv.first,V(id,c))); // bind context
-    ins->second.join(nv.second); // join to \bottom
-    // make delta
-    return r;
-  }
-  */
-
   ormap<N,V,K> erase(const N & n)
   {
     ormap<N,V,K> r;
@@ -1255,21 +1289,6 @@ class ormap
   void join (const ormap<N,V> & o)
   {
     const dotcontext<K> ic=c; // need access to an immutable context
-
-    /*
-    // join over other keys
-    for (const auto & kv : o.m)
-    {
-      // (*this)[kv.first].join(kv.second);
-      dotcontext<K> iic=ic; // make a fresh discardable context
-      ormap<N,V,K> mm(id,iic);
-      mm[kv.first]=(*this)[kv.first];
-      mm.c=ic; // context is tainted, restore it
-      mm[kv.first].join(kv.second);
-      (*this)[kv.first]=mm[kv.first];
-
-    }
-    */
 
     // join all keys
     auto mit=m.begin(); auto mito=o.m.begin();
