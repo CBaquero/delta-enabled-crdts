@@ -243,46 +243,11 @@ The Lexicographic Counter is similar to the counters used in Cassandra (tough ea
 DotKernel
 ---------
 
-While the DotKernel is a proper CRDT, with mutations and providing a join, its purpose is not direct use but instead act as a basis for all the datatypes that use dot based causality tracking (namely AWORSet, RWORSet, MVRegister, EWFlag, DWFlag and ORMap). All the supported datatypes do not need to define a specialized join and simply use the DotKernel generic join. 
+While the DotKernel is a proper CRDT, with mutations and providing a join, its purpose is not direct use but instead serve as a basis for all the datatypes that use dot based causality tracking (namely AWORSet, RWORSet, MVRegister, EWFlag, DWFlag and ORMap). All the supported datatypes do not need to define a specialized join and simply use the DotKernel generic join. 
 
-The DotKernel can be used to locally create unique tags/dots (by consulting information on a causal context, variable cc) and store in its local datastore (a map variable named ds) associations from that tag to an instance of a given payload type. 
+The DotKernel can be used to locally create unique tags/dots (by consulting information on a causal context variable cc) and store in its local datastore (a map variable named ds) associations from that tag to an instance of a given payload type. 
 
 If a mapping is removed, the tag/dot is still remembered (in a compact form) on the causal context and this allows the join to be efficient in the propagation of removes without resorting to more space demanding tombstones. In short, it implements the theory behind Optimized OR-Sets (a.k.a. ORSWOT) and offers a more general use for other similar datatypes. 
-
-AWORSet
--------
-
-tbd
-
-RWORSet
--------
-
-tbd
-
-MVRegister
-----------
-
-tbd
-
-EWFlag
-------
-
-tbd
-
-DWFlag
-------
-
-tbd
-
-RWLWWSet
---------
-
-tbd
-
-LWWRegister
---------
-
-tbd
 
 ORMap
 -----
