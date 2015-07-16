@@ -588,6 +588,20 @@ void example_gcounter()
   cout << z << endl; // GCounter: ( x->4 y->2 z->2 ) 
 }
 
+void example_pncounter()
+{
+  pncounter<int,char> x('a'), y('b');
+
+  x.inc(4); x.dec();
+  y.dec();
+
+  cout << (x.read() == y.read()) << endl; // value is diferent
+
+  x.join(y); y.join(x);
+
+  cout << (x.read() == y.read()) << endl; // value is the same, botha are 2
+}
+
 void example_ormap()
 {
   ormap<string,aworset<string>> mx("x"),my("y");
@@ -652,6 +666,7 @@ int main(int argc, char * argv[])
   example_pair();
   example_lexpair();
   example_gcounter();
+  example_pncounter();
   example_ormap();
 
  

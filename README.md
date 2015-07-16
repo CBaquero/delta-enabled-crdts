@@ -10,6 +10,7 @@ Current datatypes are:
 
   * GSet: A grow only set 
   * 2PSet: A two phase set that supports removing an element for ever
+  * Pair: A pair of CRDTs, first and second. 
   * GCounter: A grow only counter
   * PNCounter: A counter supporting increment and decrement
   * LexCounter: A counter supporting increment and decrement (Cassandra inspired)
@@ -21,6 +22,7 @@ Current datatypes are:
   * LWWReg: Last-writer-wins register
   * EWFlag: Flag with enable/disable. Enable wins (Riak Flag inspired)
   * DWFlag: Flag with enable/disable. Disable wins (Riak Flag inspired)
+  * ORMap: Map of keys to CRDTs. (similar to the Riak Map)
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
@@ -199,8 +201,29 @@ The GCounter is basically a counter that starts at 0 and can only be incremented
   cout << z << endl; // GCounter: ( x->4 y->2 z->2 ) 
 ```
 
+PNCounter
+---------
+
+The PNCounter allows increments and decrements, by keeping a separate account of increments and decrements. The reported value is the number of increments minus the number of decrements. 
+
+In the example bellow we declare two instances of counters for integers and change the default key type to be char (instead of string). Since among the two instances we did a total of 4 increments and 2 decrements, the overall value after should be 2. 
+
+```cpp 
+  pncounter<int,char> x('a'), y('b');
+
+  x.inc(4); x.dec();
+  y.dec();
+
+  cout << (x.read() == y.read()) << endl; // value is diferent
+
+  x.join(y); y.join(x);
+
+  cout << (x.read() == y.read()) << endl; // value is the same, both are 2
+```
+
+
 ORMap
---------
+-----
 
 An Observed Remove Map can be used to compose a map of keys to CRDTs. Not all CRDTs make sense inside such a map, so currently it is restricted to AWORSet, RWORSet, MVRegister, EWFlag, DWFlag, CCounter and the ORMap (enabling recursive composition). 
 
@@ -254,6 +277,19 @@ The next example illustrates that maps can hold other maps and that the key type
 ```
 
 Keep tuned for more datatype examples soon ...
+
+Disclaimer
+----------
+
+The provided implementations are still in an alpha stage. The present focus is
+establishing the main operational properties of the targeted CRDTs, that
+matches the theory supporting them, and not the extensive programming of a rich
+API for each, or ensuring production quality code. Only a minimal amount of
+example-based testing was conducted and no serious benchmarking was done.  If
+you are a developer and have a product that can benefit from these datatypes,
+you should either ensure you understand the code and can improve it to meet
+your needs, or you can contact me and work out a way to allocate the resources
+for product improvement. 
 
 Additional information
 ----------------------
