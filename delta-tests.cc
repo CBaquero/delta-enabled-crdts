@@ -400,6 +400,85 @@ void test_dwflag()
   cout << o4.read() << endl;
 }
 
+void test_ormap()
+{
+  ormap<string,twopset<string>> m1,m2;
+  m1["color"].add("red");
+  m1["color"].add("blue");
+  m2["taste"].add("bitter");
+  m2["color"].add("green");
+  cout << m2["taste"] << endl;
+  m1.join(m2);
+  cout << m1["color"] << endl;
+  m1.erase("taste");
+  cout << m1["taste"] << endl;
+ 
+ 
+
+  dotcontext<string> dc;
+  aworset<int> s1("x",dc),s2("x",dc);
+  s1.add(1); s2.add(2);
+  cout << s1 << endl;
+  cout << s2 << endl;
+
+  dotcontext<string> dc2;
+  ormap<string,aworset<string>> m3("x",dc),m4("y",dc2);
+  m3["color"].add("red");
+  m3["color"].add("blue");
+  m4["color"].add("green");
+  cout << m3["color"] << endl;
+  cout << m4["color"] << endl;
+  m3.join(m4);
+  cout << m3["color"] << endl;
+  m3["color"].rmv("green");
+  m3.join(m4);
+  cout << m3["color"] << endl;
+
+  ccounter<int> cc1("x"),cc2("y");
+  cc1.inc(10);
+  cc2.join(cc1);
+  cc2.inc(10);
+  cout << cc1 << endl;
+  cc1.inc();
+  cout << cc1 << endl;
+  cc1.dec();
+  cout << cc1 << endl;
+  cc1.reset();
+  cout << cc1 << endl;
+  cout << cc1.read() << endl;
+  cc1.inc(5);
+  cc1.join(cc2);
+  cout << cc1 << endl;
+  cout << cc1.read() << endl;
+   
+  cout << "--- Map I ---" << endl;
+  ormap<string,rworset<string>> m5("x"),m6("y");
+  m5["color"].add("red");
+  m5["taste"].add("bitter");
+  m6["sound"].add("loud");
+  m6["color"].add("blue");
+  cout << "m5 " << m5 << endl;
+  cout << "m6 " << m6 << endl;
+  m5.join(m6);
+  cout << "m5 " << m5 << endl;
+  m6.erase("sound");
+  cout << "m6 " << m6 << endl;
+  m5.join(m6);
+  cout << "m5 " << m5 << endl;
+  cout << m5.erase("color");
+  cout << m5.reset();
+  cout << "m5 " << m5 << endl;
+  m5.join(m6);
+  cout << "m5 " << m5 << endl;
+  cout << "--- Map F ---" << endl;
+
+  ormap<int,ormap<string,aworset<string>>> m7("x");
+  m7[2]["color"].add("red");
+  cout << m7 << endl;
+
+
+}
+
 void benchmark1()
 {
   aworset<int,char> g('i');
@@ -509,6 +588,43 @@ void example_gcounter()
   cout << z << endl; // GCounter: ( x->4 y->2 z->2 ) 
 }
 
+void example_ormap()
+{
+  ormap<string,aworset<string>> mx("x"),my("y");
+
+  mx["paint"].add("blue");
+  mx["sound"].add("loud");  mx["sound"].add("soft");
+  my["paint"].add("red");
+  my["number"].add("42");
+
+  mx.join(my);
+
+  cout << mx << endl; // this map includes all added elements
+
+  my["number"].rmv("42");
+  mx.join(my);
+
+  cout << mx << endl; // number set is now empty also in mx
+
+  mx.erase("paint");
+  my["paint"].add("green");
+
+  my.join(mx);
+
+  cout << my << endl; // in the "paint" key there is only "green" 
+
+  ormap<int,ormap<string,aworset<string>>> ma("alice"), mb("bob");
+
+  ma[23]["color"].add("red at 23");
+  ma[44]["color"].add("blue at 44");
+  mb[44]["sound"].add("soft at 44");
+
+
+  ma.join(mb);
+
+  cout << ma << endl; // Map with two map entries, "44" with two entries
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -525,6 +641,7 @@ int main(int argc, char * argv[])
   test_rwlwwset();
   test_ewflag();
   test_dwflag();
+  test_ormap();
 
   example1();
   example2();
@@ -535,101 +652,8 @@ int main(int argc, char * argv[])
   example_pair();
   example_lexpair();
   example_gcounter();
+  example_ormap();
 
  
-  ormap<string,twopset<string>> m1,m2;
-  m1["color"].add("red");
-  m1["color"].add("blue");
-  m2["taste"].add("bitter");
-  m2["color"].add("green");
-  cout << m2["taste"] << endl;
-  m1.join(m2);
-  cout << m1["color"] << endl;
-  m1.erase("taste");
-  cout << m1["taste"] << endl;
- 
- 
-
-  dotcontext<string> dc;
-  aworset<int> s1("x",dc),s2("x",dc);
-  s1.add(1); s2.add(2);
-  cout << s1 << endl;
-  cout << s2 << endl;
-
-  dotcontext<string> dc2;
-  ormap<string,aworset<string>> m3("x",dc),m4("y",dc2);
-  m3["color"].add("red");
-  m3["color"].add("blue");
-  m4["color"].add("green");
-  cout << m3["color"] << endl;
-  cout << m4["color"] << endl;
-  m3.join(m4);
-  cout << m3["color"] << endl;
-  m3["color"].rmv("green");
-  m3.join(m4);
-  cout << m3["color"] << endl;
-
-  ccounter<int> cc1("x"),cc2("y");
-  cc1.inc(10);
-  cc2.join(cc1);
-  cc2.inc(10);
-  cout << cc1 << endl;
-  cc1.inc();
-  cout << cc1 << endl;
-  cc1.dec();
-  cout << cc1 << endl;
-  cc1.reset();
-  cout << cc1 << endl;
-  cout << cc1.read() << endl;
-  cc1.inc(5);
-  cc1.join(cc2);
-  cout << cc1 << endl;
-  cout << cc1.read() << endl;
-   
-  cout << "--- Map I ---" << endl;
-  ormap<string,rworset<string>> m5("x"),m6("y");
-  m5["color"].add("red");
-  m5["taste"].add("bitter");
-  m6["sound"].add("loud");
-  m6["color"].add("blue");
-  cout << "m5 " << m5 << endl;
-  cout << "m6 " << m6 << endl;
-  m5.join(m6);
-  cout << "m5 " << m5 << endl;
-  m6.erase("sound");
-  cout << "m6 " << m6 << endl;
-  m5.join(m6);
-  cout << "m5 " << m5 << endl;
-  cout << m5.erase("color");
-  cout << m5.reset();
-  cout << "m5 " << m5 << endl;
-  m5.join(m6);
-  cout << "m5 " << m5 << endl;
-  cout << "--- Map F ---" << endl;
-
-  ormap<int,ormap<string,aworset<string>>> m7("x");
-  m7[2]["color"].add("red");
-  cout << m7 << endl;
-
-  /*
-  dotcontext<char> dc;
-  dotkernel<string,char> dk1;
-  dotkernel<string,char> dk2;
-  dk2.join(dk1);
-
-  dk1.add('x',"red");
-  dk2.add('y',"blue");
-  dk1.add('x',"red");
-  dk2.add('y',"blue");
-
-  cout << dk1 << endl;
-  cout << dk2 << endl;
-
-  cout << join(dk1,dk2) << endl;
-
-
-  benchmark1();
-  */
-
 
 }

@@ -119,6 +119,13 @@ public:
   map<K,int> cc; // Compact causal context
   set<pair<K,int> > dc; // Dot cloud
 
+  dotcontext<K> & operator=(const dotcontext<K> & o)
+  {
+    if (&o == this) return *this;
+    cc=o.cc; dc=o.dc;
+    return *this;
+  }
+
   friend ostream &operator<<( ostream &output, const dotcontext<K>& o)
   { 
     output << "Context:";
@@ -257,10 +264,11 @@ public:
   dotkernel(dotcontext<K> &jointc) : c(jointc) {} 
 //  dotkernel(const dotkernel<T,K> &adk) : c(adk.c), ds(adk.ds) {}
 
-  dotkernel<T,K> & operator=(dotkernel<T,K> adk)
+  dotkernel<T,K> & operator=(const dotkernel<T,K> & adk)
   {
     if (&adk == this) return *this;
-    c=adk.c; ds=adk.ds;
+    if (&c != &adk.c) c=adk.c; 
+    ds=adk.ds;
     return *this;
   }
 
@@ -1225,17 +1233,28 @@ class ormap
   // if supplied, use a shared causal context
   ormap(K i, dotcontext<K> &jointc) : id(i), c(jointc) {} 
 
-  friend ostream &operator<<( ostream &output, const ormap<N,V,K>& o)
-  { 
-    output << "Map:" << o.c << endl;
-    for (const auto & kv : o.m)
-      cout << kv.first << "->" << kv.second << endl;
-    return output;            
+//  ormap( const ormap<N,V,K>& o ) :  id(o.id), m(o.m), c(o.c) {}
+
+  ormap<N,V,K> & operator=(const ormap<N,V,K> & o)
+  {
+    if (&o == this) return *this;
+    if (&c != &o.c) c=o.c; 
+    m=o.m; id=o.id;
+    return *this;
   }
 
   dotcontext<K> & context() const
   {
     return c;
+  }
+
+  friend ostream &operator<<( ostream &output, const ormap<N,V,K>& o)
+  { 
+    output << "Map:" << o.c << endl;
+    for (const auto & kv : o.m)
+      cout << kv.first << "->" << kv.second << endl;
+//      cout << kv.first << "->" << endl;
+    return output;            
   }
 
   V& operator[] (const N& n)
@@ -1294,44 +1313,73 @@ class ormap
     auto mit=m.begin(); auto mito=o.m.begin();
     do 
     {
+      // ---- debug
+      /*
+      cout << "key left ";
+      if (mit != m.end()) 
+        cout << mit->first;
+      else
+        cout << "[empty]";
+      cout << ", key rigth ";
+      if (mito != o.m.end()) 
+        cout << mito->first;
+      else
+        cout << "[empty]";
+      cout << endl;
+      */
       if (mit != m.end() && (mito == o.m.end() || mit->first < mito->first))
       {
-        // cout << "cc one\n";
+        //cout << "entry left\n";
         // entry only at here
         
-        // creaty and empty payoad with the other context, since it might   
+        // creaty and empty payload with the other context, since it might   
         // obsolete some local entries. 
         V empty(id,o.context());
         mit->second.join(empty);
+        c=ic; // V2
 
         ++mit;
       }
       else if (mito != o.m.end() && (mit == m.end() || mito->first < mit->first))
       {
-        // cout << "cc two\n";
+        // cout << "entry right\n";
         // entry only at other
 
+        // V1
+        /*
         dotcontext<K> iic=ic; // make a fresh discardable context
         ormap<N,V,K> mm(id,iic);
         mm[mito->first].join(mito->second);
         (*this)[mito->first]=mm[mito->first];
+        */
+        // V2
+        (*this)[mito->first].join(mito->second);
+        c=ic;
+
 
         ++mito;
       }
       else if ( mit != m.end() && mito != o.m.end() )
       {
-        // cout << "cc three\n";
+        // cout << "entry both\n";
         // in both
+        // V1
+        /* 
         dotcontext<K> iic=ic; // make a fresh discardable context
         ormap<N,V,K> mm(id,iic);
         mm[mito->first]=(*this)[mito->first];
         mm.c=ic; // context is tainted, restore it
         mm[mito->first].join(mito->second);
         (*this)[mito->first]=mm[mito->first];
+        */
+        // V2
+        (*this)[mito->first].join(mito->second);
+        c=ic;
 
         ++mit; ++mito;
       }
     } while (mit != m.end() || mito != o.m.end());
+    c.join(o.c);
 
   }
 

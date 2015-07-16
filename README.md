@@ -13,6 +13,7 @@ Current datatypes are:
   * GCounter: A grow only counter
   * PNCounter: A counter supporting increment and decrement
   * LexCounter: A counter supporting increment and decrement (Cassandra inspired)
+  * CCounter: A counter for map embedding (Optimization over Riak EMCounter)
   * AWORSet: A add-wins optimized observed-remove set that allows adds and removes
   * RWORSet: A remove-wins optimized observed-remove set that allows adds and removes
   * MVRegister: An optimized multi-value register (new unpublished datatype)
@@ -198,6 +199,59 @@ The GCounter is basically a counter that starts at 0 and can only be incremented
   cout << z << endl; // GCounter: ( x->4 y->2 z->2 ) 
 ```
 
+ORMap
+--------
+
+An Observed Remove Map can be used to compose a map of keys to CRDTs. Not all CRDTs make sense inside such a map, so currently it is restricted to AWORSet, RWORSet, MVRegister, EWFlag, DWFlag, CCounter and the ORMap (enabling recursive composition). 
+
+Lets start with a simple example of a map that maps strings to AWORSets. 
+We have two map replicas that will have a key in common and be joined. Later we remove content from one of the keys and see the effect after joining again. 
+
+```cpp
+  ormap<string,rworset<string>> mx("x"),my("y");
+
+  mx["paint"].add("blue");
+  mx["sound"].add("loud");  mx["sound"].add("soft");
+  my["paint"].add("red");
+  my["number"].add("42");
+
+  mx.join(my);
+
+  cout << mx << endl; // this map includes all added elements
+
+  my["number"].rmv("42");
+  mx.join(my);
+
+  cout << mx << endl; // number set is now empty also in mx
+```
+
+If a key is erased in a map, this is equivalent to resenting the whole CRDT that it points to. If its a set it will become empty, a counter goes back to 0 and so forth. 
+
+```cpp
+  mx.erase("paint");
+  my["paint"].add("green");
+
+  my.join(mx);
+
+  cout << my << endl; // in the "paint" key there is only "green" 
+```
+
+Above we see that if new operations are done concurrently with the erase they still take place. The reset is an observed reset and it only affects data that is already present. 
+
+The next example illustrates that maps can hold other maps and that the key type can also be chosen. 
+
+```cpp
+  ormap<int,ormap<string,aworset<string>>> ma("alice"), mb("bob");
+
+  ma[23]["color"].add("red at 23");
+  ma[44]["color"].add("blue at 44");
+  mb[44]["sound"].add("soft at 44");
+
+
+  ma.join(mb);
+
+  cout << ma << endl; // Map with two map entries, inner map 44 with two entries
+```
 
 Keep tuned for more datatype examples soon ...
 
