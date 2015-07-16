@@ -1253,10 +1253,10 @@ class ormap
     output << "Map:" << o.c << endl;
     for (const auto & kv : o.m)
       cout << kv.first << "->" << kv.second << endl;
-//      cout << kv.first << "->" << endl;
     return output;            
   }
 
+  // Need to find a way to collect deltas for this interface
   V& operator[] (const N& n)
   {
     auto i = m.find(n);
@@ -1336,7 +1336,7 @@ class ormap
         // obsolete some local entries. 
         V empty(id,o.context());
         mit->second.join(empty);
-        c=ic; // V2
+        c=ic;
 
         ++mit;
       }
@@ -1345,14 +1345,6 @@ class ormap
         // cout << "entry right\n";
         // entry only at other
 
-        // V1
-        /*
-        dotcontext<K> iic=ic; // make a fresh discardable context
-        ormap<N,V,K> mm(id,iic);
-        mm[mito->first].join(mito->second);
-        (*this)[mito->first]=mm[mito->first];
-        */
-        // V2
         (*this)[mito->first].join(mito->second);
         c=ic;
 
@@ -1363,16 +1355,6 @@ class ormap
       {
         // cout << "entry both\n";
         // in both
-        // V1
-        /* 
-        dotcontext<K> iic=ic; // make a fresh discardable context
-        ormap<N,V,K> mm(id,iic);
-        mm[mito->first]=(*this)[mito->first];
-        mm.c=ic; // context is tainted, restore it
-        mm[mito->first].join(mito->second);
-        (*this)[mito->first]=mm[mito->first];
-        */
-        // V2
         (*this)[mito->first].join(mito->second);
         c=ic;
 
