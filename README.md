@@ -14,7 +14,8 @@ Current datatypes are:
   * GCounter: A grow only counter
   * PNCounter: A counter supporting increment and decrement
   * LexCounter: A counter supporting increment and decrement (Cassandra inspired)
-  * CCounter: A counter for map embedding (Optimization over Riak EMCounter)
+  * DotKernel: (Auxiliary datatype for building causal based datatypes)
+  * CCounter: A (causal) counter for map embedding (Optimization over Riak EMCounter)
   * AWORSet: A add-wins optimized observed-remove set that allows adds and removes
   * RWORSet: A remove-wins optimized observed-remove set that allows adds and removes
   * MVRegister: An optimized multi-value register (new unpublished datatype)
@@ -22,7 +23,7 @@ Current datatypes are:
   * LWWReg: Last-writer-wins register
   * EWFlag: Flag with enable/disable. Enable wins (Riak Flag inspired)
   * DWFlag: Flag with enable/disable. Disable wins (Riak Flag inspired)
-  * ORMap: Map of keys to CRDTs. (similar to the Riak Map)
+  * ORMap: Map of keys to CRDTs. (spec in common with the Riak Map)
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
@@ -204,7 +205,7 @@ The GCounter is basically a counter that starts at 0 and can only be incremented
 PNCounter
 ---------
 
-The PNCounter allows increments and decrements, by keeping a separate account of increments and decrements. The reported value is the number of increments minus the number of decrements. 
+The PNCounter allows increments and decrements, by keeping a separate account of increments and decrements. You can think of it as two GCounters.  The reported value is the number of increments minus the number of decrements. 
 
 In the example bellow we declare two instances of counters for integers and change the default key type to be char (instead of string). Since among the two instances we did a total of 4 increments and 2 decrements, the overall value after should be 2. 
 
@@ -221,6 +222,67 @@ In the example bellow we declare two instances of counters for integers and chan
   cout << (x.read() == y.read()) << endl; // value is the same, both are 2
 ```
 
+LexCounter
+---------
+
+The Lexicographic Counter is similar to the counters used in Cassandra (tough earlier specs existed). It is an alternative to the PNCounter and is based on a lexicographic pair, per actor, of a grow-only version number and count produced by that actor. Its use is just like a PNCounter, so we use a similar example bellow. To make the example slightly different we use the default string keys and no longer mention a char in the second template argument.
+
+```cpp 
+  lexcounter<int> x("a"), y("b");
+
+  x.inc(4); x.dec();
+  y.dec();
+
+  cout << (x.read() == y.read()) << endl; // value is diferent
+
+  x.join(y); y.join(x);
+
+  cout << (x.read() == y.read()) << endl; // value is the same, both are 2
+```
+
+DotKernel
+---------
+
+While the DotKernel is a proper CRDT, with mutations and providing a join, its purpose is not direct use but instead act as a basis for all the datatypes that use dot based causality tracking (namely AWORSet, RWORSet, MVRegister, EWFlag, DWFlag and ORMap). All the supported datatypes do not need to define a specialized join and simply use the DotKernel generic join. 
+
+The DotKernel can be used to locally create unique tags/dots (by consulting information on a causal context, variable cc) and store in its local datastore (a map variable named ds) associations from that tag to an instance of a given payload type. 
+
+If a mapping is removed, the tag/dot is still remembered (in a compact form) on the causal context and this allows the join to be efficient in the propagation of removes without resorting to more space demanding tombstones. In short, it implements the theory behind Optimized OR-Sets (a.k.a. ORSWOT) and offers a more general use for other similar datatypes. 
+
+AWORSet
+-------
+
+tbd
+
+RWORSet
+-------
+
+tbd
+
+MVRegister
+----------
+
+tbd
+
+EWFlag
+------
+
+tbd
+
+DWFlag
+------
+
+tbd
+
+RWLWWSet
+--------
+
+tbd
+
+LWWRegister
+--------
+
+tbd
 
 ORMap
 -----

@@ -599,7 +599,21 @@ void example_pncounter()
 
   x.join(y); y.join(x);
 
-  cout << (x.read() == y.read()) << endl; // value is the same, botha are 2
+  cout << (x.read() == y.read()) << endl; // value is the same, both are 2
+}
+
+void example_lexcounter()
+{
+  lexcounter<int> x("a"), y("b");
+
+  x.inc(4); x.dec();
+  y.dec();
+
+  cout << (x.read() == y.read()) << endl; // value is diferent
+
+  x.join(y); y.join(x);
+
+  cout << (x.read() == y.read()) << endl; // value is the same, both are 2
 }
 
 void example_ormap()
@@ -667,6 +681,7 @@ int main(int argc, char * argv[])
   example_lexpair();
   example_gcounter();
   example_pncounter();
+  example_lexcounter();
   example_ormap();
 
  
