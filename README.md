@@ -268,6 +268,55 @@ We show a simple example with increments and decrements
   x.join(y); y.join(x);
 
   cout << (x.read() == y.read()) << endl; // value is the same, both are 2
+  
+  x.reset();
+
+  cout << x.read() << endl; // you guessed correctly, its 0
+}
+```
+
+AWORSet
+-------
+
+An Add Wins Observed Remove Set is a set that allows element additions and removals. The removals only affect the elements that are visible locally, so that a concurrent removal and addition of the same element will result in the element still being present after joining the sets. The implementation used the DotKernel and is optimized, it is also known as ORSWOT in the early literature.
+
+The example bellow will show a concurrent add and remove and finally a reset. 
+
+```cpp
+  aworset<float> x("a"), y("b");
+
+  x.add(3.14); x.add(2.718); x.rmv(3.14);
+  y.add(3.14);
+
+  x.join(y);
+
+  cout << x.read() << endl; // Both 3.14 and 2.718 are there
+
+  x.reset(); x.join(y);
+
+  cout << x.read() << endl; // Empty, since 3.14 adition from "b" was visible
+```
+
+RWORSet
+-------
+
+A Removed Wins Observed Remove Set is the dual implementation to AWORSet where concurrent removes win over adds. The implementation is slightly more complex but still optimized and based on the DotKernel. 
+
+We show the same example as above, but with a different outcome. 
+
+```cpp
+  rworset<float> x("a"), y("b");
+
+  x.add(3.14); x.add(2.718); x.rmv(3.14);
+  y.add(3.14);
+
+  x.join(y);
+
+  cout << x.read() << endl; // Only 2.718 is there, since remove wins
+
+  x.reset(); x.join(y);
+
+  cout << x.read() << endl; // Empty
 ```
 
 ORMap

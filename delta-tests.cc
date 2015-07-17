@@ -643,6 +643,42 @@ void example_ccounter()
   x.join(y); y.join(x);
 
   cout << (x.read() == y.read()) << endl; // value is the same, both are 2
+
+  x.reset();
+
+  cout << x.read() << endl; // you guessed correctly, its 0
+}
+
+void example_aworset()
+{
+  aworset<float> x("a"), y("b");
+
+  x.add(3.14); x.add(2.718); x.rmv(3.14);
+  y.add(3.14);
+
+  x.join(y);
+
+  cout << x.read() << endl; // Both 3.14 and 2.718 are there
+
+  x.reset(); x.join(y);
+
+  cout << x.read() << endl; // Empty, since 3.14 adition from "b" was visible
+}
+
+void example_rworset()
+{
+  rworset<float> x("a"), y("b");
+
+  x.add(3.14); x.add(2.718); x.rmv(3.14);
+  y.add(3.14);
+
+  x.join(y);
+
+  cout << x.read() << endl; // Only 2.718 is there, since rmv wins
+
+  x.reset(); x.join(y);
+
+  cout << x.read() << endl; // Empty
 }
 
 
@@ -713,6 +749,8 @@ int main(int argc, char * argv[])
   example_pncounter();
   example_lexcounter();
   example_ccounter();
+  example_aworset();
+  example_rworset();
   example_ormap();
 
  
