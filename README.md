@@ -303,6 +303,22 @@ The next example illustrates that maps can hold other maps and that the key type
   cout << ma << endl; // Map with two map entries, inner map 44 with two entries
 ```
 
+In a map, capturing a delta is done in the usual way, with the exception of the key access operator. This is due to the access returning a reference to the stored value, and thus its delta mutations will be of that type and must be converted to a suitable map type. 
+
+```
+  ormap<string,aworset<string>> mx("x"),d1,d2;
+  mx["color"].add("red");
+  mx["color"].add("blue");
+
+  // Now make some deltas, d1 and d2
+
+  d1=mx.erase("color");
+
+  d2["color"].join(mx["color"].add("black"));
+
+  cout << d1 << endl; // Will erase observed dots in the "color" entry
+```cpp
+
 Keep tuned for more datatype examples soon ...
 
 Disclaimer

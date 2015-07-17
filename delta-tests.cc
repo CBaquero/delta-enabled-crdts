@@ -434,6 +434,17 @@ void test_ormap()
   m3.join(m4);
   cout << m3["color"] << endl;
 
+  ormap<string,aworset<string>> mx("x"),d1,d2;
+  mx["color"].add("red");
+  mx["color"].add("blue");
+
+  d1=mx.erase("color");
+
+  d2["color"].join(mx["color"].add("black"));
+
+  cout << d1 << endl; // Will erase observed dots in the "color" entry
+  cout << d2 << endl; // Will add a dot (x:3) tagged "black" entry under "color"
+
   ccounter<int> cc1("x"),cc2("y");
   cc1.inc(10);
   cc2.join(cc1);
@@ -470,6 +481,8 @@ void test_ormap()
   cout << "m5 " << m5 << endl;
   m5.join(m6);
   cout << "m5 " << m5 << endl;
+
+  
   cout << "--- Map F ---" << endl;
 
   ormap<int,ormap<string,aworset<string>>> m7("x");
