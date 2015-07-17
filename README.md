@@ -317,6 +317,7 @@ In a map, capturing a delta is done in the usual way, with the exception of the 
   d2["color"].join(mx["color"].add("black"));
 
   cout << d1 << endl; // Will erase observed dots in the "color" entry
+  cout << d2 << endl; // Will add a dot (x:3) for "black" entry under "color"
 ```
 
 Keep tuned for more datatype examples soon ...
