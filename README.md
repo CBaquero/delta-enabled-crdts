@@ -19,11 +19,11 @@ Current datatypes are:
   * AWORSet: A add-wins optimized observed-remove set that allows adds and removes
   * RWORSet: A remove-wins optimized observed-remove set that allows adds and removes
   * MVRegister: An optimized multi-value register (new unpublished datatype)
-  * RWLWWSet: Last-writer-wins set with remove wins bias (SoundCloud inspired)
-  * LWWReg: Last-writer-wins register
   * EWFlag: Flag with enable/disable. Enable wins (Riak Flag inspired)
   * DWFlag: Flag with enable/disable. Disable wins (Riak Flag inspired)
   * ORMap: Map of keys to CRDTs. (spec in common with the Riak Map)
+  * RWLWWSet: Last-writer-wins set with remove wins bias (SoundCloud inspired)
+  * LWWReg: Last-writer-wins register
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
@@ -248,6 +248,27 @@ While the DotKernel is a proper CRDT, with mutations and providing a join, its p
 The DotKernel can be used to locally create unique tags/dots (by consulting information on a causal context variable cc) and store in its local datastore (a map variable named ds) associations from that tag to an instance of a given payload type. 
 
 If a mapping is removed, the tag/dot is still remembered (in a compact form) on the causal context and this allows the join to be efficient in the propagation of removes without resorting to more space demanding tombstones. In short, it implements the theory behind Optimized OR-Sets (a.k.a. ORSWOT) and offers a more general use for other similar datatypes. 
+
+CCounter
+--------
+
+A Causal Counter is a variation of a LexCounter that can be used inside ORMaps. 
+Each time a given actor wants to increase or decrease a count, it consults its last updated count, changes it and stores it under a new dot entry after deleting its previous entry. As required for all ORMap embeddable datatypes a reset is supported, but it is not a perfect observed reset. 
+
+We show a simple example with increments and decrements
+
+```cpp
+  ccounter<int> x("a"), y("b");
+
+  x.inc(4); x.dec();
+  y.dec();
+
+  cout << (x.read() == y.read()) << endl; // value is diferent
+
+  x.join(y); y.join(x);
+
+  cout << (x.read() == y.read()) << endl; // value is the same, both are 2
+```
 
 ORMap
 -----

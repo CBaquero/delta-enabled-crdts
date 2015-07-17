@@ -438,6 +438,8 @@ void test_ormap()
   mx["color"].add("red");
   mx["color"].add("blue");
 
+  // Now make some deltas, d1 and d2
+
   d1=mx.erase("color");
 
   d2["color"].join(mx["color"].add("black"));
@@ -629,6 +631,21 @@ void example_lexcounter()
   cout << (x.read() == y.read()) << endl; // value is the same, both are 2
 }
 
+void example_ccounter()
+{
+  ccounter<int> x("a"), y("b");
+
+  x.inc(4); x.dec();
+  y.dec();
+
+  cout << (x.read() == y.read()) << endl; // value is diferent
+
+  x.join(y); y.join(x);
+
+  cout << (x.read() == y.read()) << endl; // value is the same, both are 2
+}
+
+
 void example_ormap()
 {
   ormap<string,aworset<string>> mx("x"),my("y");
@@ -695,6 +712,7 @@ int main(int argc, char * argv[])
   example_gcounter();
   example_pncounter();
   example_lexcounter();
+  example_ccounter();
   example_ormap();
 
  
