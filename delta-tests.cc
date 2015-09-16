@@ -220,6 +220,37 @@ void test_mvreg()
   o3.write("hello world");
   o4.join(o3);
   cout << o4 << endl;
+
+  cout << "--- Testing: mvreg with reduce --\n";
+
+  mvreg<int> o5("id x"),o6("id y"),o7("id z");
+
+  o5.write(3);
+  o6.write(5);
+  o7.write(2);
+
+  o5.join(o6);
+  o5.join(o7);
+  cout << o5.read() << endl;
+
+  cout << o5.resolve() << endl;
+  cout << o5.read() << endl;
+
+  mvreg<pair<int,int>> o8("id x"),o9("id y"),o10("id z");
+
+  // notice that the default order for pairs is lexicographic in C++
+  // cout << (pair<int,int>(0,1) < pair<int,int>(1,0)) << endl;
+
+  o8.write(pair<int,int>(0,0));
+  o9.write(pair<int,int>(1,0));
+  o10.write(pair<int,int>(0,1));
+
+  o8.join(o9);
+  o8.join(o10);
+  cout << o8.read() << endl;
+
+  cout << o8.resolve() << endl;
+  cout << o8.read() << endl;
 }
 
 /*
@@ -333,7 +364,9 @@ void test_lwwreg()
   lwwreg<int,string> r;
 
   r.write(1,"Hello");
+  cout << r << endl;
   r.write(0,"My"); 
+  cout << r << endl;
   r.write(3,"World");
 
   cout << r << endl;
@@ -348,10 +381,13 @@ void test_rwlwwset()
   rwlwwset<int,string> s;
   s.add(1,"a");
   s.add(1,"b");
+  s.add(10000,"e");
   s.add(2,"b");
+  cout << s << endl;
   cout << s.in("b") << endl;
   rwlwwset<int,string> t;
   t.rmv(2,"b");
+  t.rmv(6,"e");
   t.add(1,"c");
   s.join(t);
   cout << s.in("b") << endl;
@@ -736,6 +772,7 @@ int main(int argc, char * argv[])
   test_ewflag();
   test_dwflag();
   test_ormap();
+  test_rwlwwset();
 
   example1();
   example2();
@@ -752,7 +789,5 @@ int main(int argc, char * argv[])
   example_aworset();
   example_rworset();
   example_ormap();
-
- 
 
 }

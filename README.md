@@ -392,6 +392,11 @@ In a map, capturing a delta is done in the usual way, with the exception of the 
 
 Keep tuned for more datatype examples soon ...
 
+Acknowledgments
+---------------
+
+This work was partially supported by projects: FP7 SyncFree under grant 609551, and ON2 project NORTE-07-0124-FEDER-000058. 
+
 Disclaimer
 ----------
 

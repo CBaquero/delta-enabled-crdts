@@ -957,6 +957,25 @@ public:
     return r;
   }
 
+  mvreg<V,K> resolve()
+  {
+    mvreg<V,K> r,v;
+    set<V> s; // collect all values that are not maximals
+    for (const auto & dsa : dk.ds) // Naif quadratic comparison
+      for (const auto & dsb : dk.ds)
+        if ( dsa.second != dsb.second && 
+            ::join(dsa.second,dsb.second) == dsb.second ) // < based on join
+        // if (dsa.second < dsb.second) // values must implement operator<
+          s.insert(dsa.second);
+    // remove all non maximals and register deltas for those removals
+    for (const auto & val : s)
+    {
+      v.dk=dk.rmv(val);
+      r.join(v);
+    }
+    return r;
+  }
+
   void join (mvreg<V,K> o)
   {
     dk.join(o.dk);
