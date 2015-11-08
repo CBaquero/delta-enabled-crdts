@@ -403,6 +403,13 @@ public:
     return m==o.m; 
   }
 
+  V local() // get local counter value // CBM make this const
+  {
+    V res=0;
+    res += m[id];
+    return res;
+  }
+
   V read() const // get counter value
   {
     V res=0;
@@ -452,8 +459,13 @@ public:
     return res;
   }
 
+  V local() // get local counter value
+  {
+    V res=p.local()-n.local();
+    return res;
+  }
 
-  V read() // get counter value
+  V read() const // get counter value
   {
     V res=p.read()-n.read();
     return res;
@@ -1386,4 +1398,164 @@ class ormap
 
 
 };
+
+template<typename N, typename V>
+class gmap
+{
+  
+  public:
+  // later make m private by adding a begin() for iterators 
+  map<N,V> m;  
+
+  friend ostream &operator<<( ostream &output, const gmap<N,V>& o)
+  { 
+    output << "GMap:" << endl;
+    for (const auto & kv : o.m)
+      cout << kv.first << "->" << kv.second << endl;
+    return output;            
+  }
+
+  // Need to find a way to collect deltas for this interface
+  V& operator[] (const N& n)
+  {
+    auto i = m.find(n);
+    if (i == m.end()) // 1st key access
+    {
+      auto ins = m.insert(i,pair<N,V>(n,V()));
+      return ins->second;
+
+    }
+    else
+    {
+      return i->second;
+    }
+  }
+
+  void join (const gmap<N,V> & o)
+  {
+    // join all keys
+    auto mit=m.begin(); auto mito=o.m.begin();
+    do 
+    {
+      // ---- debug
+      /*
+      cout << "key left ";
+      if (mit != m.end()) 
+        cout << mit->first;
+      else
+        cout << "[empty]";
+      cout << ", key rigth ";
+      if (mito != o.m.end()) 
+        cout << mito->first;
+      else
+        cout << "[empty]";
+      cout << endl;
+      */
+      if (mit != m.end() && (mito == o.m.end() || mit->first < mito->first))
+      {
+        //cout << "entry left\n";
+        // entry only at here
+
+        ++mit;
+      }
+      else if (mito != o.m.end() && (mit == m.end() || mito->first < mit->first))
+      {
+        // cout << "entry right\n";
+        // entry only at other
+
+        (*this)[mito->first]=mito->second;
+
+        ++mito;
+      }
+      else if ( mit != m.end() && mito != o.m.end() )
+      {
+        // cout << "entry both\n";
+        // in both
+        (*this)[mito->first]=::join((*this)[mito->first],mito->second);
+
+        ++mit; ++mito;
+      }
+    } while (mit != m.end() || mito != o.m.end());
+
+  }
+
+};
+
+template <typename V=int, typename K=string>
+class bcounter
+{
+private:
+  pncounter<V,K> c;
+  gmap<pair<K,K>,int> m; 
+  K id;
+
+public:
+
+  bcounter() {} // Only for deltas and those should not be mutated
+  bcounter(K a) : id(a), c(a) {} // Mutable replicas need a unique id
+
+  bcounter inc(V tosum={1}) // Argument is optional
+  {
+    bcounter<V,K> res;
+    res.c = c.inc(tosum); 
+    return res;
+  }
+
+  bcounter dec(V todec={1}) // Argument is optional
+  {
+    bcounter<V,K> res;
+    if (todec <= local()) // Check local capacity
+      res.c = c.dec(todec); 
+    return res;
+  }
+
+  bcounter mv(V q, K to)
+  {
+    bcounter<V,K> res;
+    if (q <= local()) // Check local capacity
+    {
+      m[pair<K,K>(id,to)]+=q; 
+      res.m[pair<K,K>(id,to)]=m[pair<K,K>(id,to)];
+    }
+    return res;
+  }
+
+  V read() // get global counter value
+  {
+    V res=c.read();
+    // Sum incoming flows
+    //for (const auto & kv : m.m)
+    //  if (kv.first.second==id) res+=kv.second;
+    // Subtract outgoing flows
+    //for (const auto & kv : m.m)
+    //  if (kv.first.first==id) res-=kv.second;
+    return res;
+  }
+
+  V local() // get local counter available value
+  {
+    V res=c.local();
+    // Sum incoming flows
+    for (const auto & kv : m.m)
+      if (kv.first.second==id) res+=kv.second;
+    // Subtract outgoing flows
+    for (const auto & kv : m.m)
+      if (kv.first.first==id) res-=kv.second;
+    return res;
+  }
+
+  void join(const bcounter& o)
+  {
+    c.join(o.c);
+    m.join(o.m);
+  }
+
+  friend ostream &operator<<( ostream &output, const bcounter<V,K>& o)
+  { 
+    output << "BCounter:C:" << o.c << "BCounter:M:" << o.m;
+    return output;            
+  }
+
+};
+
 
