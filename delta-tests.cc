@@ -755,6 +755,49 @@ void example_ormap()
   cout << ma << endl; // Map with two map entries, "44" with two entries
 }
 
+void example_gmap()
+{
+  gmap<char,int> gmx, gmy;
+
+  gmx['a']=1; 
+  gmx['b']=0; 
+  gmy['a']=3; 
+  gmy['c']=0; 
+
+  gmx.join(gmy);
+  cout << gmx << endl;
+  gmx.join(gmy);
+  cout << gmx << endl;
+}
+
+void example_bcounter()
+{
+  bcounter<int,char> bcx('a'), bcy('b');
+
+  bcx.inc(10);
+  cout << bcx << endl;
+  bcy.inc(3);
+
+  cout << bcx.read() << endl;
+  cout << bcy.read() << endl;
+
+  bcy.mv(1,'a');
+  bcy.mv(1,'a');
+
+  bcx.join(bcy);
+  cout << bcx << endl;
+  cout << bcx.read() << endl;
+  cout << bcx.local() << endl;
+  cout << bcy << endl;
+  cout << bcy.read() << endl;
+  cout << bcy.local() << endl;
+
+  bcx.mv(10,'b');
+  cout << bcx << endl;
+  cout << bcx.read() << endl;
+  cout << bcx.local() << endl;
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -789,42 +832,9 @@ int main(int argc, char * argv[])
   example_aworset();
   example_rworset();
   example_ormap();
+  example_gmap();
+  example_bcounter();
 
-  gmap<char,int> gmx, gmy;
 
-  gmx['a']=1; 
-  gmx['b']=0; 
-  gmy['a']=3; 
-  gmy['c']=0; 
-
-  gmx.join(gmy);
-  cout << gmx << endl;
-  gmx.join(gmy);
-  cout << gmx << endl;
-
-  bcounter<int,char> bcx('a'), bcy('b');
-
-  bcx.inc(10);
-  cout << bcx << endl;
-  bcy.inc(3);
-
-  cout << bcx.read() << endl;
-  cout << bcy.read() << endl;
-
-  bcy.mv(1,'a');
-  bcy.mv(1,'a');
-
-  bcx.join(bcy);
-  cout << bcx << endl;
-  cout << bcx.read() << endl;
-  cout << bcx.local() << endl;
-  cout << bcy << endl;
-  cout << bcy.read() << endl;
-  cout << bcy.local() << endl;
-
-  bcx.mv(10,'b');
-  cout << bcx << endl;
-  cout << bcx.read() << endl;
-  cout << bcx.local() << endl;
 
 }
