@@ -1415,7 +1415,7 @@ class gmap
     return output;            
   }
 
-  // Need to find a way to collect deltas for this interface
+  // Need to find a better way to collect deltas for this interface
   V& operator[] (const N& n)
   {
     auto i = m.find(n);
@@ -1437,20 +1437,6 @@ class gmap
     auto mit=m.begin(); auto mito=o.m.begin();
     do 
     {
-      // ---- debug
-      /*
-      cout << "key left ";
-      if (mit != m.end()) 
-        cout << mit->first;
-      else
-        cout << "[empty]";
-      cout << ", key rigth ";
-      if (mito != o.m.end()) 
-        cout << mito->first;
-      else
-        cout << "[empty]";
-      cout << endl;
-      */
       if (mit != m.end() && (mito == o.m.end() || mit->first < mito->first))
       {
         //cout << "entry left\n";
@@ -1509,7 +1495,7 @@ public:
     return res;
   }
 
-  bcounter mv(V q, K to)
+  bcounter mv(V q, K to) // Quantity V to node id K
   {
     bcounter<V,K> res;
     if (q <= local()) // Check local capacity
@@ -1523,12 +1509,6 @@ public:
   V read() // get global counter value
   {
     V res=c.read();
-    // Sum incoming flows
-    //for (const auto & kv : m.m)
-    //  if (kv.first.second==id) res+=kv.second;
-    // Subtract outgoing flows
-    //for (const auto & kv : m.m)
-    //  if (kv.first.first==id) res-=kv.second;
     return res;
   }
 
