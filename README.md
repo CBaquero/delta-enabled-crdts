@@ -21,9 +21,11 @@ Current datatypes are:
   * MVRegister: An optimized multi-value register (new unpublished datatype)
   * EWFlag: Flag with enable/disable. Enable wins (Riak Flag inspired)
   * DWFlag: Flag with enable/disable. Disable wins (Riak Flag inspired)
-  * ORMap: Map of keys to CRDTs. (spec in common with the Riak Map)
+  * GMap: Grow only map of keys to CRDTs
+  * ORMap: Map of keys to causal CRDTs. (spec in common with the Riak Map)
   * RWLWWSet: Last-writer-wins set with remove wins bias (SoundCloud inspired)
   * LWWReg: Last-writer-wins register
+  * BCounter: Non negative bounder counter. (by Valter, et all. SRDS 2015)
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
