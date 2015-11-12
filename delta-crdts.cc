@@ -31,6 +31,8 @@
 #include <unordered_set>
 #include <map>
 #include <list>
+#include <tuple>
+#include <vector>
 #include <string>
 #include <iostream>
 #include <type_traits>
@@ -108,6 +110,51 @@ ostream &operator<<( ostream &output, const set<T>& o)
   output << "( ";
   for (const auto& e : o) output << e << " ";
   output << ")";
+  return output;
+}
+
+template<typename T> // get a point among two points
+vector<T> among(const vector<T> & l, const vector<T> & r)
+{
+  // Overall strategy is to first try wide advances to the right, 
+  // as compact as possible. If that fails, go with fine grain (less compact)
+  // advances until eventually succeed. 
+  assert (l < r);
+  vector<T> res;
+  vector<T> base;
+  // adjust base as forwardly compact as possible
+  for (int is = 0; is <= l.size(); is++)
+  {
+    base.clear();
+    if (is > 0)
+      for (int isp = 0; isp < is; isp++)
+        base.push_back(l[isp]);
+    if ( is < l.size() )
+      base.push_back(true);
+    if ( base >= l && base < r ) 
+      break;
+  }
+  //vector<T> base=l;
+  // forward finer and finer
+  int zeroes=0;
+  do
+  {
+    res=base;
+    for (int i = zeroes; i > 0; i--)
+      res.push_back(false);    
+    res.push_back(true);    
+    zeroes++;
+  } while (res >= r);
+  assert (res > l && res < r);
+  return res;
+}
+
+template<typename T> // Output a vector
+ostream &operator<<( ostream &output, const vector<T>& o)
+{
+  output << "[";
+  for (const auto & e : o) output << e;
+  output << "]";
   return output;
 }
 
@@ -334,6 +381,16 @@ public:
     res.ds.insert(pair<pair<K,int>,T>(dot,val));
     res.c.insertdot(dot);
     return res;
+  }
+
+  // Add that returns the added dot, instead of kernel delta
+  pair<K,int> dotadd (const K& id, const T& val)
+  {
+    // get new dot
+    pair<K,int> dot=c.makedot(id);
+    // add under new dot
+    ds.insert(pair<pair<K,int>,T>(dot,val));
+    return dot;
   }
 
   dotkernel<T,K> rmv (const T& val)  // remove all dots matching value
@@ -1538,4 +1595,164 @@ public:
 
 };
 
+// Still need to add deltas to mutations bellow
+template<typename T=char, typename I=string>
+class orseq
+{
+private:
+  dotcontext<I> c;
+  // List elements are: (position,dot,payload)
+  list<tuple<vector<bool>,pair<I,int>,T>> l;
+  I id;
+
+public:
+
+  orseq(I i) : id(i)
+  {
+  }
+
+  friend ostream &operator<<( ostream &output, const orseq<T,I>& o)
+  { 
+    output << "ORSeq: " << o.c;
+    output << " List:"; 
+    for (const auto & t : o.l)
+      output << "(" << get<0>(t) << " " << get<1>(t) 
+        << " " << get<2>(t) << ")";
+    return output;            
+  }
+
+  typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator begin() 
+  {
+    return l.begin();
+  }
+
+  typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator end() 
+  {
+    return l.end();
+  }
+
+  void erase (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i)
+  {
+    if (i != l.end())
+    {
+      l.erase(i);
+    }
+  }
+
+  void insert (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i, const T & val)
+  {
+    if (i == l.end())
+      push_back(val);
+    else
+      if (i == l.begin())
+        push_front(val);
+      else
+      {
+        typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator j=i;
+        j--;
+        vector<bool> bl,br,pos;
+        bl=get<0>(*j);
+        br=get<0>(*i);
+        pos=among(bl,br);
+        // get new dot
+        pair<I,int> dot=c.makedot(id);
+        l.insert(i,make_tuple(pos,dot,val));
+      }
+  }
+
+  // add 1st element
+  void makefirst(const T & val)
+  {
+    vector<bool> bl,br,pos;
+    bl.push_back(false);
+    br.push_back(true);
+    pos=among(bl,br);
+    // get new dot
+    pair<I,int> dot=c.makedot(id);
+    l.push_back(make_tuple(pos,dot,val));
+  }
+
+  void push_back (const T & val)
+  {
+    if (l.empty())
+      makefirst(val);
+    else
+    {
+      vector<bool> bl,br,pos;
+      bl=get<0>(l.back());
+      br.push_back(true);
+      pos=among(bl,br);
+      // get new dot
+      pair<I,int> dot=c.makedot(id);
+      l.push_back(make_tuple(pos,dot,val));
+    }
+  }
+
+  void push_front (const T & val)
+  {
+    if (l.empty())
+      makefirst(val);
+    else
+    {
+      vector<bool> bl,br,pos;
+      br=get<0>(l.front());
+      bl.push_back(false);
+      pos=among(bl,br);
+      // get new dot
+      pair<I,int> dot=c.makedot(id);
+      l.push_front(make_tuple(pos,dot,val));
+    }
+  }
+
+  void join (const orseq<T,I> & o)
+  {
+    if (this == &o) return; // Join is idempotent, but just don't do it.
+    auto it=l.begin(); auto ito=o.l.begin();
+    pair<vector<bool>,I> e,eo;
+    do 
+    {
+      if ( it != l.end() )
+      {
+        e.first=get<0>(*it);
+        e.second=get<1>(*it).first;
+      }
+      if ( ito != o.l.end() )
+      {
+        eo.first=get<0>(*ito);
+        eo.second=get<1>(*ito).first;
+      }
+      //if ( it != l.end() && ( ito == o.l.end() || get<0>(*it) < get<0>(*ito)))
+      if ( it != l.end() && ( ito == o.l.end() || e < eo ) )
+      {
+        // cout << "ds one\n";
+        // entry only at this
+        if (o.c.dotin(get<1>(*it))) // other knows dot, must delete here 
+          l.erase(it++);
+        else // keep it
+          ++it;
+      }
+      // else if ( ito != o.l.end() && ( it == l.end() || get<0>(*ito) < get<0>(*it)))
+      else if ( ito != o.l.end() && ( it == l.end() || eo < e ) )
+      {
+        //cout << "ds two\n";
+        // entry only at other
+        if(! c.dotin(get<1>(*ito))) // If I dont know, import
+        {
+          l.insert(it,*ito); // it keeps pointing to next
+        }
+        ++ito;
+      }
+      else if ( it != l.end() && ito != o.l.end() )
+      {
+        // cout << "ds three\n";
+        // in both
+        ++it; ++ito;
+      }
+    } while (it != l.end() || ito != o.l.end() );
+    // CC
+    c.join(o.c);
+
+  }
+
+};
 

@@ -1,5 +1,5 @@
 CC = g++
-DEBUG = -g
+DEBUG = -g -v
 FLAGS = -std=c++11 -ferror-limit=2
 
 all: delta-tests

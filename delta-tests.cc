@@ -31,6 +31,7 @@
 #include <set>
 #include <map>
 #include <string>
+#include <vector>
 #include <iostream>
 #include <chrono>
 //#define NDEBUG  // Uncoment do stop testing asserts
@@ -798,6 +799,43 @@ void example_bcounter()
   cout << bcx.local() << endl;
 }
 
+void example_orseq()
+{
+  vector<bool> bl,br;
+  bl.push_back(false);
+  br.push_back(true);
+  
+  cout << bl << endl;
+  cout << br << endl;
+  cout << "size " << bl.size() << endl;
+
+  cout << (bl < br) << endl;
+  cout << among(bl,br) << endl;
+
+  orseq<> seq("a");
+  seq.push_back('a');
+  seq.push_back('b');
+  seq.push_back('c');
+  seq.push_front('0');
+  seq.push_front('1');
+  cout << seq << endl;
+
+  auto i = seq.begin();
+  i++;
+  seq.insert(i,'x');
+  cout << seq << endl;
+
+  orseq<> seq2("b");
+  seq2.push_back('y');
+  cout << seq2 << endl;
+
+  seq.join(seq2);
+  cout << seq << endl;
+  seq2.erase(seq2.begin());
+  seq.join(seq2);
+  cout << seq << endl;
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -834,7 +872,6 @@ int main(int argc, char * argv[])
   example_ormap();
   example_gmap();
   example_bcounter();
-
-
+  example_orseq();
 
 }
