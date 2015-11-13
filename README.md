@@ -26,6 +26,7 @@ Current datatypes are:
   * RWLWWSet: Last-writer-wins set with remove wins bias (SoundCloud inspired)
   * LWWReg: Last-writer-wins register
   * BCounter: Non negative bounder counter. (by Valter, et all. SRDS 2015)
+  * ORSeq: A causal sequence prototype. (Treedoc inspired)
 
 Each datatype depicts some mutation methods and some access methods. Mutations will inflate the state in the join semi-lattice and also return a state with a delta mutation. The delta mutations are intended to be much smaller that the whole state and can be joined together or to full states to synchronize states.  
 
