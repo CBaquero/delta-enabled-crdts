@@ -1646,12 +1646,15 @@ public:
     return l.end();
   }
 
-  void erase (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i)
+  orseq<T,I> erase (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i)
   {
+    orseq<T,I> res;
     if (i != l.end())
     {
+      res.c.insertdot(get<1>(*i));
       l.erase(i);
     }
+    return res;
   }
 
   dotcontext<I> & context()
@@ -1662,10 +1665,13 @@ public:
   orseq<T,I> reset ()
   {
     orseq<T,I> res;
+    for (auto const & t : l)
+      res.c.insertdot(get<1>(t));
     l.clear();
     return res;
   }
 
+  // CBM: make it return deltas
   void insert (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i, const T & val)
   {
     if (i == l.end())
@@ -1688,6 +1694,7 @@ public:
   }
 
   // add 1st element
+  // CBM: make it return deltas
   void makefirst(const T & val)
   {
     vector<bool> bl,br,pos;
@@ -1699,6 +1706,7 @@ public:
     l.push_back(make_tuple(pos,dot,val));
   }
 
+  // CBM: make it return deltas
   void push_back (const T & val)
   {
     if (l.empty())
@@ -1715,6 +1723,7 @@ public:
     }
   }
 
+  // CBM: make it return deltas
   void push_front (const T & val)
   {
     if (l.empty())
