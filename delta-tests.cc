@@ -841,7 +841,11 @@ void example_orseq()
   ms1["upper"].push_back('a');
   ms2["upper"].push_front('b');
   ms2["lower"].push_front('c');
-  cout << join(ms1,ms2) << endl;
+  ms1.join(ms2);
+  cout << ms1 << endl;
+  ms2.erase("upper");
+  ms1.join(ms2);
+  cout << ms1 << endl;
 }
 
 int main(int argc, char * argv[])

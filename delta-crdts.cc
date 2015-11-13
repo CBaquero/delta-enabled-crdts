@@ -1654,9 +1654,16 @@ public:
     }
   }
 
-  void reset ()
+  dotcontext<I> & context()
   {
+    return c;
+  }
+
+  orseq<T,I> reset ()
+  {
+    orseq<T,I> res;
     l.clear();
+    return res;
   }
 
   void insert (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i, const T & val)
