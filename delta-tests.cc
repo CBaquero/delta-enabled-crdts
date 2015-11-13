@@ -834,6 +834,14 @@ void example_orseq()
   seq2.erase(seq2.begin());
   seq.join(seq2);
   cout << seq << endl;
+  seq.reset();
+  cout << seq << endl;
+
+  ormap<string,orseq<char>> ms1("id1"),ms2("id2");
+  ms1["upper"].push_back('a');
+  ms2["upper"].push_front('b');
+  ms2["lower"].push_front('c');
+  cout << join(ms1,ms2) << endl;
 }
 
 int main(int argc, char * argv[])

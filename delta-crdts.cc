@@ -1600,15 +1600,30 @@ template<typename T=char, typename I=string>
 class orseq
 {
 private:
-  dotcontext<I> c;
+
   // List elements are: (position,dot,payload)
   list<tuple<vector<bool>,pair<I,int>,T>> l;
-  I id;
+  I id;  
+
+  dotcontext<I> cbase;
+  dotcontext<I> & c;
 
 public:
 
-  orseq(I i) : id(i)
+  // if no causal context supplied, used base one
+  orseq() : c(cbase) {}  // Only for deltas and those should not be mutated
+  orseq(I i) : id(i), c(cbase) {} 
+  // if supplied, use a shared causal context
+  orseq(I i,dotcontext<I> &jointc) : id(i), c(jointc) {} 
+//  dotkernel(const dotkernel<T,K> &adk) : c(adk.c), ds(adk.ds) {}
+
+  orseq<T,I> & operator=(const orseq<T,I> & aos)
   {
+    if (&aos == this) return *this;
+    if (&c != &aos.c) c=aos.c; 
+    l=aos.l;
+    id=aos.id;
+    return *this;
   }
 
   friend ostream &operator<<( ostream &output, const orseq<T,I>& o)
@@ -1637,6 +1652,11 @@ public:
     {
       l.erase(i);
     }
+  }
+
+  void reset ()
+  {
+    l.clear();
   }
 
   void insert (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i, const T & val)
