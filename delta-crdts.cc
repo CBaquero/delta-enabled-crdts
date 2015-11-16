@@ -1615,7 +1615,6 @@ public:
   orseq(I i) : id(i), c(cbase) {} 
   // if supplied, use a shared causal context
   orseq(I i,dotcontext<I> &jointc) : id(i), c(jointc) {} 
-//  dotkernel(const dotkernel<T,K> &adk) : c(adk.c), ds(adk.ds) {}
 
   orseq<T,I> & operator=(const orseq<T,I> & aos)
   {
@@ -1671,14 +1670,14 @@ public:
     return res;
   }
 
-  // CBM: make it return deltas
-  void insert (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i, const T & val)
+  orseq<T,I> insert (typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator i, const T & val)
   {
+    orseq<T,I> res;
     if (i == l.end())
-      push_back(val);
+      res=push_back(val);
     else
       if (i == l.begin())
-        push_front(val);
+        res=push_front(val);
       else
       {
         typename list<tuple<vector<bool>,pair<I,int>,T>>::iterator j=i;
@@ -1688,15 +1687,22 @@ public:
         br=get<0>(*i);
         pos=among(bl,br);
         // get new dot
-        pair<I,int> dot=c.makedot(id);
-        l.insert(i,make_tuple(pos,dot,val));
+        auto dot=c.makedot(id);
+        auto tuple=make_tuple(pos,dot,val);
+        l.insert(i,tuple);
+        // delta
+        res.c.insertdot(dot);
+        res.l.push_front(tuple);
       }
+    return res;
   }
 
   // add 1st element
-  // CBM: make it return deltas
-  void makefirst(const T & val)
+  orseq<T,I> makefirst(const T & val)
   {
+    assert(l.empty());
+
+    orseq<T,I> res;
     vector<bool> bl,br,pos;
     bl.push_back(false);
     br.push_back(true);
@@ -1704,13 +1710,17 @@ public:
     // get new dot
     pair<I,int> dot=c.makedot(id);
     l.push_back(make_tuple(pos,dot,val));
+    // delta
+    res.c.insertdot(dot);
+    res.l=l;
+    return res;
   }
 
-  // CBM: make it return deltas
-  void push_back (const T & val)
+  orseq<T,I> push_back (const T & val)
   {
+    orseq<T,I> res;
     if (l.empty())
-      makefirst(val);
+      res=makefirst(val);
     else
     {
       vector<bool> bl,br,pos;
@@ -1718,16 +1728,21 @@ public:
       br.push_back(true);
       pos=among(bl,br);
       // get new dot
-      pair<I,int> dot=c.makedot(id);
-      l.push_back(make_tuple(pos,dot,val));
+      auto dot=c.makedot(id);
+      auto tuple=make_tuple(pos,dot,val);
+      l.push_back(tuple);
+      // delta
+      res.c.insertdot(dot);
+      res.l.push_front(tuple);
     }
+    return res;
   }
 
-  // CBM: make it return deltas
-  void push_front (const T & val)
+  orseq<T,I> push_front (const T & val)
   {
+    orseq<T,I> res;
     if (l.empty())
-      makefirst(val);
+      res=makefirst(val);
     else
     {
       vector<bool> bl,br,pos;
@@ -1735,9 +1750,14 @@ public:
       bl.push_back(false);
       pos=among(bl,br);
       // get new dot
-      pair<I,int> dot=c.makedot(id);
-      l.push_front(make_tuple(pos,dot,val));
+      auto dot=c.makedot(id);
+      auto tuple=make_tuple(pos,dot,val);
+      l.push_front(tuple);
+      // delta
+      res.c.insertdot(dot);
+      res.l.push_front(tuple);
     }
+    return res;
   }
 
   void join (const orseq<T,I> & o)
