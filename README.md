@@ -322,6 +322,63 @@ We show the same example as above, but with a different outcome.
   cout << x.read() << endl; // Empty
 ```
 
+MVReg
+-----
+
+A Multi-Value Register is a simple data type that allows read and write operations of a given payload. Writes will overwrite all locally visible values, but concurrent writes will create alternative values tat are represented as siblings. Thus, unlike a sequential register, reads may return multiple values.   
+
+In the example bellow, we do some sequential writes that overwrite the initial writes, and then we join two concurrent writes to show a pair of siblings. Finally we overwrite everything with the string "mars", in replica y, and show that this effect propagates on join to replica x. 
+
+```cpp
+  mvreg<string> x("uid-x"),y("uid-y");
+
+  x.write("hello"); x.write("world"); 
+
+  y.write("world"); y.write("hello"); 
+
+  y.join(x);
+
+  cout << y.read() << endl; // Output is ( hello world )
+
+  y.write("mars");
+
+  x.join(y);
+
+  cout << x.read() << endl; // Output is ( mars )
+```
+
+Multi-value registers can store any type of "opaque" payload. However if the payload supports a partial order, it is possible to use a resolve method to reduce the number of siblings to only those that are maximal elements in the order. In other words, if any sibling has another sibling that is greater than it, it is removed. A special case is when the stored payload is a total order, implying that resolve will always produce a register with a single element, the maximal element. 
+
+```cpp
+  mvreg<int> a("uid-a"), b("uid-b");
+
+  a.write(0); b.write(3); a.join(b); 
+
+  cout << a.read() << endl; // Output is ( 0 3 )
+  
+  a.resolve();
+
+  cout << a.read() << endl; // Output is ( 3 )
+
+  a.write(1); // Value can go down again
+
+  cout << a.read() << endl; // Output is ( 1 )
+```
+
+The last example, bellow, shows a payload that reflects a partial order, and can thus allow for concurrent maximals after resolve. 
+
+```cpp
+  mvreg<pair<int,int>> j("uid-j"),k("uid-k"),l("uid-l");
+
+  j.write(pair<int,int>(0,0));
+  k.write(pair<int,int>(1,0));
+  l.write(pair<int,int>(0,1));
+
+  j.join(k); j.join(l); j.resolve();
+
+  cout << j.read() << endl; // Output is ( (0,1) (1,0) )
+```
+
 ORMap
 -----
 

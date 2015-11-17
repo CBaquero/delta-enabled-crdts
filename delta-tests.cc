@@ -848,6 +848,50 @@ void example_orseq()
   cout << ms1 << endl;
 }
 
+void  example_mvreg()
+{
+  mvreg<string> x("uid-x"),y("uid-y");
+
+  x.write("hello"); x.write("world"); 
+
+  y.write("world"); y.write("hello"); 
+
+  y.join(x);
+
+  cout << y.read() << endl; // Output is ( hello world )
+
+  y.write("mars");
+  x.join(y);
+
+  cout << x.read() << endl; // Output is ( mars )
+
+  mvreg<int> a("uid-a"), b("uid-b");
+
+  a.write(0); b.write(3); a.join(b); 
+
+  cout << a.read() << endl; // Output is ( 0 3 )
+  
+  a.resolve();
+
+  cout << a.read() << endl; // Output is ( 3 )
+
+  a.write(1); // Value can go down again
+
+  cout << a.read() << endl; // Output is ( 1 )
+
+  mvreg<pair<int,int>> j("uid-j"),k("uid-k"),l("uid-l");
+
+  j.write(pair<int,int>(0,0));
+  k.write(pair<int,int>(1,0));
+  l.write(pair<int,int>(0,1));
+
+  j.join(k); j.join(l); j.resolve();
+
+  cout << j.read() << endl; // Output is ( (0,1) (1,0) )
+
+
+}
+
 int main(int argc, char * argv[])
 {
   test_gset();
@@ -885,5 +929,6 @@ int main(int argc, char * argv[])
   example_gmap();
   example_bcounter();
   example_orseq();
+  example_mvreg();
 
 }
