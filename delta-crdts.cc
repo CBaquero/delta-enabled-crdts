@@ -121,30 +121,26 @@ vector<T> among(const vector<T> & l, const vector<T> & r)
   // advances until eventually succeed. 
   assert (l < r);
   vector<T> res;
-  vector<T> base;
-  // adjust base as forwardly compact as possible
+  // adjust res as forwardly compact as possible
   for (int is = 0; is <= l.size(); is++)
   {
-    base.clear();
-    if (is > 0)
-      for (int isp = 0; isp < is; isp++)
-        base.push_back(l[isp]);
-    if ( is < l.size() )
-      base.push_back(true);
-    if ( base >= l && base < r ) 
-      break;
+    res.assign(l.begin(),l.begin()+is); // get initial segment
+    if ( is < l.size() ) // if partial segment, try appending one
+    {
+      res.push_back(true);
+      if ( res >= l && res < r ) break; // see if we are there 
+    }
   }
-  //vector<T> base=l;
+  assert (res >= l && res < r);
+  if (res > l) return res;
+  //vector<T> res=l;
   // forward finer and finer
-  int zeroes=0;
-  do
+  res.push_back(true);    
+  while (res >= r)
   {
-    res=base;
-    for (int i = zeroes; i > 0; i--)
-      res.push_back(false);    
+    res.back()=false;
     res.push_back(true);    
-    zeroes++;
-  } while (res >= r);
+  }
   assert (res > l && res < r);
   return res;
 }

@@ -803,6 +803,16 @@ void example_orseq()
 {
   vector<bool> bl,br;
   bl.push_back(false);
+  bl.push_back(true);
+  bl.push_back(false);
+  bl.push_back(true);
+  bl.push_back(true);
+  bl.push_back(false);
+  bl.push_back(true);
+  br.push_back(false);
+  br.push_back(true);
+  br.push_back(true);
+  br.push_back(false);
   br.push_back(true);
   
   cout << bl << endl;
@@ -811,6 +821,7 @@ void example_orseq()
 
   cout << (bl < br) << endl;
   cout << among(bl,br) << endl;
+
 
   orseq<> seq("a");
   seq.push_back('a');
