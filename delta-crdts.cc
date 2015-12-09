@@ -1538,26 +1538,21 @@ public:
 
   typename map<pair<K,int>,V>::iterator findme()
   {
-    if (me != dk.ds.end())
-      return me;
-    else
+    for (auto it=dk.ds.begin(); it!=dk.ds.end(); ++it)
     {
-      for (auto it=dk.ds.begin(); it!=dk.ds.end(); ++it)
+      // Try to locate "me" at the more recent dot of mine
+      if (it->first.first == id) // a candidate
       {
-        // Try to locate "me" at the more recent dot of mine
-        if (it->first.first == id) // a candidate
+        if (me==dk.ds.end()) // pick at least one valid
+          me=it;
+        else // need to switch if more recent
         {
-          if (me==dk.ds.end()) // pick at least one valid
+          if (it->first.second > me->first.second)
             me=it;
-          else // need to switch if more recent
-          {
-            if (it->first.second > me->first.second)
-              me=it;
-          }
         }
       }
-      return me;
     }
+    return me;
   }
 
   // Return a reference to the payload of active self entry
@@ -1582,6 +1577,7 @@ public:
   void fresh()
   {
     dk.add(id,V());
+    findme();
   }
 
   bag<V,K> reset()
@@ -1645,6 +1641,11 @@ public:
     rwcounter<V,K> r;
     r.b=b.reset();
     return r;
+  }
+
+  void fresh()
+  {
+    b.fresh();
   }
 
   V read()
