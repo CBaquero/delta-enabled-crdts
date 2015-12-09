@@ -939,6 +939,7 @@ void test_rwcounter()
   cout << rwc1 << endl;
   cout << rwc1.read() << endl;
 
+  // Still need to make it work properly inside maps
   ormap<string,rwcounter<int>> mx("x");
 
   cout << mx["adds"].inc() << endl;
