@@ -1353,6 +1353,7 @@ class ormap
   public:
   // if no causal context supplied, use base one
   ormap() : c(cbase) {} 
+//  ormap(K i) : id(i), c(cbase) {  cout << &c << endl; } 
   ormap(K i) : id(i), c(cbase) {} 
   // if supplied, use a shared causal context
   ormap(K i, dotcontext<K> &jointc) : id(i), c(jointc) {} 
@@ -1492,41 +1493,50 @@ class ormap
 
 };
 
-template<typename E, typename K=string>
+// A bag is similar to an RWSet, but allows for CRDT payloads
+template<typename V, typename K=string>
 class bag 
 {
 private:
-  dotkernel<E,K> dk; // Dot kernel
+  dotkernel<V,K> dk; // Dot kernel
   K id;
-  typename map<pair<K,int>,E>::iterator me;
 
 public:
+  typename map<pair<K,int>,V>::iterator me; // Quick reference to id's entry
+
   bag() { me=dk.ds.end(); } // Only for deltas and those should not be mutated
   bag(K k) : id(k) { me=dk.ds.end();} // Mutable replicas need a unique id
   bag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) { me=dk.ds.end(); } 
+
 
   dotcontext<K> & context()
   {
     return dk.c;
   }
 
-  friend ostream &operator<<( ostream &output, const bag<E,K>& o)
+  void insert(pair<pair<K,int>,V> t)
+  {
+    dk.ds.insert(pair<pair<K,int>,V>(t));
+    dk.c.insertdot(t.first);
+  }
+
+  friend ostream &operator<<( ostream &output, const bag<V,K>& o)
   { 
     output << "Bag:" << o.dk;
     return output;            
   }
 
-  typename map<pair<K,int>,E>::iterator begin()
+  typename map<pair<K,int>,V>::iterator begin()
   {
     return dk.ds.begin();
   }
 
-  typename map<pair<K,int>,E>::iterator end()
+  typename map<pair<K,int>,V>::iterator end()
   {
     return dk.ds.end();
   }
 
-  typename map<pair<K,int>,E>::iterator findme()
+  typename map<pair<K,int>,V>::iterator findme()
   {
     if (me != dk.ds.end())
       return me;
@@ -1539,7 +1549,7 @@ public:
         {
           if (me==dk.ds.end()) // pick at least one valid
             me=it;
-          else // need to switchif more recent
+          else // need to switch if more recent
           {
             if (it->first.second > me->first.second)
               me=it;
@@ -1550,7 +1560,8 @@ public:
     }
   }
 
-  E & self()
+  // Return a reference to the payload of active self entry
+  V & mydata()
   {
     if (me != dk.ds.end())
       return me->second;
@@ -1560,28 +1571,36 @@ public:
         return me->second;
       else
       {
-        dk.add(id,E());
+        dk.add(id,V());
         findme();
         return me->second;
       }
     }
   }
 
-  bag<E,K> reset()
+  // To protect from concurrent removes, create fresh dot for self
+  void fresh()
   {
-    bag<E,K> r;
+    dk.add(id,V());
+  }
+
+  bag<V,K> reset()
+  {
+    bag<V,K> r;
     r.dk=dk.rmv(); 
     me=dk.ds.end();
     return r;
   }
 
-  void join (bag<E,K> & o)
+  // Using the deep join will try to join different payloads under same dot
+  void join (bag<V,K> & o)
   {
     dk.deepjoin(o.dk);
   }
 };
 
-// Need to add deltas
+// Inspired by designs from Carl Lerche and Paulo S. Almeida
+// Still need to make it work properly inside maps
 template<typename V, typename K=string>
 class rwcounter    //  Reset Wins Counter
 {
@@ -1608,20 +1627,24 @@ public:
   rwcounter<V,K> inc (const V& val=1) 
   {
     rwcounter<V,K> r;
-    b.self().first+=val;
+    b.mydata().first+=val;
+    r.b.insert(*b.me);
     return r;
   }
 
   rwcounter<V,K> dec (const V& val=1) 
   {
     rwcounter<V,K> r;
-    b.self().second+=val;
+    b.mydata().second+=val;
+    r.b.insert(*b.me);
     return r;
   }
 
-  void reset()
+  rwcounter<V,K> reset()
   {
-    b.reset();
+    rwcounter<V,K> r;
+    r.b=b.reset();
+    return r;
   }
 
   V read()

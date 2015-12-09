@@ -903,6 +903,53 @@ void  example_mvreg()
 
 }
 
+void test_bag()
+{
+  bag<pair<int,int>> b("i");
+  bag<pair<int,int>> c("j");
+
+  b.mydata().first=1;
+  cout << b.mydata() << endl;
+  cout << b << endl;
+  c.join(b);
+  b.mydata().first=3;
+  b.join(c);
+  cout << b << endl;
+  c.reset();
+  b.join(c);
+  cout << b << endl;
+}
+
+void test_rwcounter()
+{
+  rwcounter<int> rwc1("i"),rwc2("j");
+
+  rwc1.inc();
+  rwc1.inc(2);
+  rwc1.dec();
+  rwc2.inc(5);
+  cout << rwc1 << endl;
+  cout << rwc2 << endl;
+  rwc1.join(rwc2);
+  cout << rwc1 << endl;
+  cout << rwc1.read() << endl;
+  cout << "Reset:" << rwc2.reset() << endl;
+  cout << "Delta:" << rwc2.inc(1) << endl;
+  rwc1.join(rwc2);
+  cout << rwc1 << endl;
+  cout << rwc1.read() << endl;
+
+  ormap<string,rwcounter<int>> mx("x");
+
+  cout << mx["adds"].inc() << endl;
+  mx["prints"].inc(5);
+  mx["adds"].inc();
+
+  cout << mx["adds"] << endl;
+  cout << mx["adds"].read() << endl;
+  cout << mx << endl;
+
+}
 
 int main(int argc, char * argv[])
 {
@@ -922,6 +969,8 @@ int main(int argc, char * argv[])
   test_dwflag();
   test_ormap();
   test_rwlwwset();
+  test_bag();
+  test_rwcounter();
 
   example1();
   example2();
@@ -943,37 +992,5 @@ int main(int argc, char * argv[])
   example_orseq();
   example_mvreg();
 
-  cout << (string("abc") < string("zzz")) << endl;
-
-  bag<pair<int,int>> b("i");
-  bag<pair<int,int>> c("j");
-
-  b.self().first=1;
-  cout << b.self() << endl;
-  cout << b << endl;
-  c.join(b);
-  b.self().first=3;
-  b.join(c);
-  cout << b << endl;
-  c.reset();
-  b.join(c);
-  cout << b << endl;
-
-  rwcounter<int> rwc1("i"),rwc2("j");
-
-  rwc1.inc();
-  rwc1.inc(2);
-  rwc1.dec();
-  rwc2.inc(5);
-  cout << rwc1 << endl;
-  cout << rwc2 << endl;
-  rwc1.join(rwc2);
-  cout << rwc1 << endl;
-  cout << rwc1.read() << endl;
-  rwc2.reset();
-  rwc2.inc(1);
-  rwc1.join(rwc2);
-  cout << rwc1 << endl;
-  cout << rwc1.read() << endl;
 
 }
