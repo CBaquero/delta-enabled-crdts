@@ -1353,7 +1353,6 @@ class ormap
   public:
   // if no causal context supplied, use base one
   ormap() : c(cbase) {} 
-//  ormap(K i) : id(i), c(cbase) {  cout << &c << endl; } 
   ormap(K i) : id(i), c(cbase) {} 
   // if supplied, use a shared causal context
   ormap(K i, dotcontext<K> &jointc) : id(i), c(jointc) {} 
@@ -1502,11 +1501,18 @@ private:
   K id;
 
 public:
-  typename map<pair<K,int>,V>::iterator me; // Quick reference to id's entry
 
-  bag() { me=dk.ds.end(); } // Only for deltas and those should not be mutated
-  bag(K k) : id(k) { me=dk.ds.end();} // Mutable replicas need a unique id
-  bag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) { me=dk.ds.end(); } 
+  bag() {} // Only for deltas and those should not be mutated
+  bag(K k) : id(k) {} // Mutable replicas need a unique id
+  bag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+
+  bag<V,K> & operator=(const bag<V,K> & o)
+  {
+    if (&o == this) return *this;
+    if (&dk != &o.dk) dk=o.dk; 
+    id=o.id;
+    return *this;
+  }
 
 
   dotcontext<K> & context()
@@ -1536,11 +1542,11 @@ public:
     return dk.ds.end();
   }
 
-  typename map<pair<K,int>,V>::iterator findme()
+  pair<K,int> mydot()
   {
+    auto me = dk.ds.end();
     for (auto it=dk.ds.begin(); it!=dk.ds.end(); ++it)
     {
-      // Try to locate "me" at the more recent dot of mine
       if (it->first.first == id) // a candidate
       {
         if (me==dk.ds.end()) // pick at least one valid
@@ -1552,24 +1558,37 @@ public:
         }
       }
     }
-    return me;
+    if (me != dk.ds.end())
+      return me->first;
+    else 
+    {
+      fresh();
+      return mydot(); // After a fresh it must be found
+    }
   }
 
-  // Return a reference to the payload of active self entry
   V & mydata()
   {
+    auto me = dk.ds.end();
+    for (auto it=dk.ds.begin(); it!=dk.ds.end(); ++it)
+    {
+      if (it->first.first == id) // a candidate
+      {
+        if (me==dk.ds.end()) // pick at least one valid
+          me=it;
+        else // need to switch if more recent
+        {
+          if (it->first.second > me->first.second)
+            me=it;
+        }
+      }
+    }
     if (me != dk.ds.end())
       return me->second;
-    else
+    else 
     {
-      if (findme()!=dk.ds.end()) 
-        return me->second;
-      else
-      {
-        dk.add(id,V());
-        findme();
-        return me->second;
-      }
+      fresh();
+      return mydata(); // After a fresh it must be found
     }
   }
 
@@ -1577,19 +1596,17 @@ public:
   void fresh()
   {
     dk.add(id,V());
-    findme();
   }
 
   bag<V,K> reset()
   {
     bag<V,K> r;
     r.dk=dk.rmv(); 
-    me=dk.ds.end();
     return r;
   }
 
   // Using the deep join will try to join different payloads under same dot
-  void join (bag<V,K> & o)
+  void join (const bag<V,K> & o)
   {
     dk.deepjoin(o.dk);
   }
@@ -1609,6 +1626,14 @@ public:
   rwcounter(K k) : id(k), b(k) {} // Mutable replicas need a unique id
   rwcounter(K k, dotcontext<K> &jointc) : id(k), b(k,jointc) {} 
 
+  rwcounter<V,K> & operator=(const rwcounter<V,K> & o)
+  {
+    if (&o == this) return *this;
+    if (&b != &o.b) b=o.b; 
+    id=o.id; 
+    return *this;
+  }
+
   dotcontext<K> & context()
   {
     return b.context();
@@ -1624,7 +1649,7 @@ public:
   {
     rwcounter<V,K> r;
     b.mydata().first+=val;
-    r.b.insert(*b.me);
+    r.b.insert(pair<pair<K,int>,pair<V,V>>(b.mydot(),b.mydata()));
     return r;
   }
 
@@ -1632,7 +1657,7 @@ public:
   {
     rwcounter<V,K> r;
     b.mydata().second+=val;
-    r.b.insert(*b.me);
+    r.b.insert(pair<pair<K,int>,pair<V,V>>(b.mydot(),b.mydata()));
     return r;
   }
 
@@ -1659,7 +1684,7 @@ public:
     return ac.first - ac.second;
   }
 
-  void join(rwcounter<V,K> & o)
+  void join(const rwcounter<V,K> & o)
   {
     b.join(o.b);
   }

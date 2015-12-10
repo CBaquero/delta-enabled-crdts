@@ -918,6 +918,17 @@ void test_bag()
   c.reset();
   b.join(c);
   cout << b << endl;
+
+  // Now inside a map
+  ormap<string,bag<pair<int,int>>> ma("y");
+
+  cout << ma["a"] << endl;
+  ma["a"].fresh();
+  cout << ma["a"] << endl;
+  cout << ma["a"].mydata() << endl;
+  ma["a"].mydata().first+=1;
+  cout << ma["a"].mydata() << endl;
+  cout << ma << endl;
 }
 
 void test_rwcounter()
@@ -948,18 +959,28 @@ void test_rwcounter()
   cout << rwc1 << endl;
   cout << rwc1.read() << endl;
 
-  // Still need to make it work properly inside maps
-  /*
-  ormap<string,rwcounter<int>> mx("x");
+  ormap<string,rwcounter<float>> mx("x");
 
+  cout << mx["adds"] << endl;
+  cout << mx["adds"] << endl;
   cout << mx["adds"].inc() << endl;
   mx["prints"].inc(5);
+  cout << "Delta:" << mx["prints"].inc(6) << endl;
   mx["adds"].inc();
 
   cout << mx["adds"] << endl;
   cout << mx["adds"].read() << endl;
   cout << mx << endl;
-  */
+
+  ormap<string,rwcounter<float>> my("y");
+
+  my.join(mx);
+  my.erase("prints");
+  mx["prints"].fresh(); // without this fresh concurrent inc is lost
+  mx["prints"].inc(5);
+  mx.join(my);
+  cout << mx << endl;
+
 
 }
 
@@ -1003,6 +1024,7 @@ int main(int argc, char * argv[])
   example_bcounter();
   example_orseq();
   example_mvreg();
+
 
 
 }
