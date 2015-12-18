@@ -1025,6 +1025,8 @@ int main(int argc, char * argv[])
   example_orseq();
   example_mvreg();
 
+  pair<int,int> a(1,2),b(2,1);
+  cout << a << endl;
 
 
 }

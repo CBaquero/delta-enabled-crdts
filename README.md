@@ -473,7 +473,7 @@ for product improvement.
 Additional information
 ----------------------
 
-For more information on CRDTs and the newer concept of delta mutation consider checking the following papers:
+For more information on CRDTs and the newer concept of delta mutation consider checking the following papers and video presentation:
 
   1. A comprehensive study of Convergent and Commutative Replicated Data Types
 http://hal.inria.fr/docs/00/55/55/88/PDF/techreport.pdf
@@ -484,4 +484,5 @@ http://arxiv.org/pdf/1410.2803v1.pdf
   3. Conflict-free Replicated Data Types
 http://gsd.di.uminho.pt/members/cbm/members/cbm/ps/sss2011.pdf
 
-
+  4. Implementation of CRDTs with δ-mutators
+  https://www.youtube.com/watch?v=jwCx1A181vY&list=PL9Jh2HsAWHxIc7Tt2M6xez_TOP21GBH6M&index=15 
