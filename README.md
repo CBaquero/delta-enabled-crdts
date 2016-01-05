@@ -38,7 +38,7 @@ The code is still in a very early state and was not properly tested yet.
 Simple Example
 --------------
 
-Lets make two replicas of an add-wins or-set of strings. Node `x` uses replica `sx` and node `y` uses `sy` (in practice you would like to run this in different nodes, and serialize state to move it between nodes). The first node will add and them remove a given string and the other node will add that same string and a diferent one. Finally we will join the two states and see the result. 
+Lets make two replicas of an add-wins or-set of strings. Node `x` uses replica `sx` and node `y` uses `sy` (in practice you would like to run this in different nodes, and serialize state to move it between nodes). The first node will add and then remove a given string and the other node will add that same string and a diferent one. Finally we will join the two states and see the result. 
 
 ```cpp
 aworset<string> sx("x"),sy("y");
