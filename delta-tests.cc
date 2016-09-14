@@ -822,6 +822,7 @@ void example_orseq()
   cout << (bl < br) << endl;
   cout << among(bl,br) << endl;
 
+  // Simple ORSEQ
 
   orseq<> seq("a");
   seq.push_back('a');
@@ -848,6 +849,8 @@ void example_orseq()
   seq.reset();
   cout << seq << endl;
 
+  // Map with a ORSEQ inside
+
   ormap<string,orseq<char>> ms1("id1"),ms2("id2");
   ms1["upper"].push_back('a');
   ms2["upper"].push_front('b');
@@ -857,6 +860,34 @@ void example_orseq()
   ms2.erase("upper");
   ms1.join(ms2);
   cout << ms1 << endl;
+
+  // Metadata growth, insertions and deletions of added elements,
+  // while keeping the first element there
+
+  orseq<> seq3("s3");
+  seq3.push_back('a');
+  cout << seq3 << endl;
+  for (int ops=0; ops < 1000; ops++)
+  {
+    seq3.push_front('d');
+    seq3.erase(seq3.begin());
+  }
+  cout << seq3 << endl;
+
+  // Metadata growth, insertions and deletions of added elements,
+  // while keeping the last added element there
+
+  orseq<> seq4("s4");
+  seq4.push_back('a');
+  cout << seq4 << endl;
+  for (int ops=0; ops < 1000; ops++)
+  {
+    seq4.push_back('d');
+    seq4.erase(seq4.begin());
+  }
+  cout << seq4 << endl;
+
+
 }
 
 void  example_mvreg()
@@ -1025,8 +1056,21 @@ int main(int argc, char * argv[])
   example_orseq();
   example_mvreg();
 
-  pair<int,int> a(1,2),b(2,1);
-  cout << a << endl;
 
+//  ormap<string,aworset<string>> m1("dev1"),m2("dev2");
+//
+//  m1["friend"].add("alice");
+//  m2.join(m1); m2.erase("friend");
+//  m1["friend"].add("bob");
+//  
+//  cout << join(m1,m2) << endl; // shows: friend -> {bob}
+
+  ormap<string,rwcounter<int>> m1("dev1"),m2("dev2");
+
+  m1["friend"].inc(2);
+  m2.join(m1); m2.erase("friend");
+  m1["friend"].fresh(); m1["friend"].inc(3);
+  
+  cout << join(m1,m2)["friend"].read() << endl; // shows a total of 3
 
 }

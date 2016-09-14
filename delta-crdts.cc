@@ -4,7 +4,7 @@
 //
 // @author    Carlos Baquero <cbm@di.uminho.pt>
 //
-// @copyright 2014 Carlos Baquero
+// @copyright 2014-2016 Carlos Baquero
 //
 // This file is provided to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file
@@ -1613,7 +1613,6 @@ public:
 };
 
 // Inspired by designs from Carl Lerche and Paulo S. Almeida
-// Still need to make it work properly inside maps
 template<typename V, typename K=string>
 class rwcounter    //  Reset Wins Counter
 {
