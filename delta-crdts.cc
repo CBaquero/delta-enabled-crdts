@@ -114,7 +114,7 @@ ostream &operator<<( ostream &output, const set<T>& o)
 }
 
 template<typename T> // get a point among two points
-vector<T> among(const vector<T> & l, const vector<T> & r)
+vector<T> among(const vector<T> & l, const vector<T> & r, int j=0)
 {
   // Overall strategy is to first try wide advances to the right, 
   // as compact as possible. If that fails, go with fine grain (less compact)
@@ -135,10 +135,17 @@ vector<T> among(const vector<T> & l, const vector<T> & r)
   if (res > l) return res;
   //vector<T> res=l;
   // forward finer and finer
+  for(int i = 0; i < j; i++){
+    res.push_back(false);
+  }
   res.push_back(true);    
+  
   while (res >= r)
   {
     res.back()=false;
+    for(int i = 0; i < j; i++){
+      res.push_back(false);
+    }
     res.push_back(true);    
   }
   assert (res > l && res < r);
