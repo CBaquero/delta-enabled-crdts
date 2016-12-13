@@ -153,8 +153,10 @@ ostream &operator<<( ostream &output, const set<T>& o)
 // }
 
 template<typename T> // get a point among two points
-vector<T> among(const vector<T> & l, const vector<T> & r, int j=8)
+vector<T> among(const vector<T> & l, const vector<T> & r, int j = 8)
 {
+  if (j<2)
+    j = 2;
   assert (l < r);
   vector<T> res;
   int ctr = 0, ctr2 = 0;
