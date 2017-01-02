@@ -2011,7 +2011,6 @@ public:
         eo.first=get<0>(*ito);
         eo.second=get<1>(*ito).first;
       }
-      //if ( it != l.end() && ( ito == o.l.end() || get<0>(*it) < get<0>(*ito)))
       if ( it != l.end() && ( ito == o.l.end() || e < eo ) )
       {
         // cout << "ds one\n";
@@ -2021,7 +2020,6 @@ public:
         else // keep it
           ++it;
       }
-      // else if ( ito != o.l.end() && ( it == l.end() || get<0>(*ito) < get<0>(*it)))
       else if ( ito != o.l.end() && ( it == l.end() || eo < e ) )
       {
         //cout << "ds two\n";

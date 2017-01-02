@@ -824,9 +824,11 @@ void example_orseq()
 
   // Simple ORSEQ
 
-  orseq<> seq("a");
+  orseq<> seq("rid");
   seq.push_back('a');
+  cout << seq << endl;
   seq.push_back('b');
+  cout << seq << endl;
   seq.push_back('c');
   seq.push_front('0');
   seq.push_front('1');
@@ -885,6 +887,8 @@ void example_orseq()
     seq4.push_back('d');
     seq4.erase(seq4.begin());
   }
+  cout << seq4 << endl;
+  seq4.erase(seq4.begin());
   cout << seq4 << endl;
 
 
