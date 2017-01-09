@@ -113,40 +113,95 @@ ostream &operator<<( ostream &output, const set<T>& o)
   return output;
 }
 
+// template<typename T> // get a point among two points
+// vector<T> among(const vector<T> & l, const vector<T> & r, int j=4)
+// {
+//   // Overall strategy is to first try wide advances to the right, 
+//   // as compact as possible. If that fails, go with fine grain (less compact)
+//   // advances until eventually succeed. 
+//   assert (l < r);
+//   vector<T> res;
+//   // adjust res as forwardly compact as possible
+//   for (int is = 0; is <= l.size(); is++)
+//   {
+//     res.assign(l.begin(),l.begin()+is); // get initial segment
+//     if ( is < l.size() ) // if partial segment, try appending one
+//     {
+//       res.push_back(true);
+//       if ( res >= l && res < r ) break; // see if we are there 
+//     }
+//   }
+//   assert (res >= l && res < r);
+//   if (res > l) return res;
+//   //vector<T> res=l;
+//   // forward finer and finer
+//   for(int i = 0; i < j; i++){
+//     res.push_back(false);
+//   }
+//   res.push_back(true);    
+  
+//   while (res >= r)
+//   {
+//     res.back()=false;
+//     for(int i = 0; i < j; i++){
+//       res.push_back(false);
+//     }
+//     res.push_back(true);    
+//   }
+//   assert (res > l && res < r);
+//   return res;
+// }
+
 template<typename T> // get a point among two points
-vector<T> among(const vector<T> & l, const vector<T> & r, int j=0)
+vector<T> among(const vector<T> & l, const vector<T> & r, int j = 8)
 {
-  // Overall strategy is to first try wide advances to the right, 
-  // as compact as possible. If that fails, go with fine grain (less compact)
-  // advances until eventually succeed. 
+  if (j<2)
+    j = 2;
   assert (l < r);
   vector<T> res;
-  // adjust res as forwardly compact as possible
-  for (int is = 0; is <= l.size(); is++)
-  {
-    res.assign(l.begin(),l.begin()+is); // get initial segment
-    if ( is < l.size() ) // if partial segment, try appending one
-    {
+  int ctr = 0, ctr2 = 0;
+  for (int i = 0; i < l.size(); i++)
+    if(l.at(i) == 0)
+      ctr++;
+  int lmodj = l.size()%j;
+  if (lmodj == 0)
+    if (ctr == 1)
+    {// case X
+      res.assign(l.begin(),l.end());
+      // push back j-1 false and then 1 true
+      for(int i = 0; i < j-1; i++)
+        res.push_back(false);
       res.push_back(true);
-      if ( res >= l && res < r ) break; // see if we are there 
     }
-  }
-  assert (res >= l && res < r);
-  if (res > l) return res;
-  //vector<T> res=l;
-  // forward finer and finer
-  for(int i = 0; i < j; i++){
-    res.push_back(false);
-  }
-  res.push_back(true);    
-  
-  while (res >= r)
-  {
-    res.back()=false;
-    for(int i = 0; i < j; i++){
+    else
+    {// case A
+      // count number of laest significant 1s in a row
+      for (int i = l.size()-1; i > 0; i--)
+      if (l.at(i) == 1)
+        ctr2++;
+      else
+        break;
+      // copy all without last 0 and all following least significant 1s
+      res.assign(l.begin(),l.end()-ctr2-1);
+      // push back true
+      res.push_back(true); 
+    }
+  else
+  {// case B
+    res.assign(l.begin(),l.end());
+    // push back j-lmodj-1 false and then 1 true
+    for(int i = 0; i < j-lmodj-1; i++)
       res.push_back(false);
-    }
-    res.push_back(true);    
+    res.push_back(true); 
+  }
+  // in case of push front
+  if (res >= r)
+  {
+    res.assign(r.begin(),r.end()-1);
+    // push back j false and then 1 true
+    for(int i = 0; i < j; i++)
+      res.push_back(false);
+    res.push_back(true);
   }
   assert (res > l && res < r);
   return res;
