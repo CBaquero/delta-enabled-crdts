@@ -1,11 +1,9 @@
-CC = g++
-DEBUG = -g -v
-FLAGS = -std=c++11 -ferror-limit=2
+CC = gcc
 
-all: delta-tests
+all: id-gen
 
-delta-tests: delta-crdts.cc delta-tests.cc
-	$(CC) $(FLAGS) delta-tests.cc -o delta-tests
+id-gen: id-gen.c
+	$(CC) -o id-gen id-gen.c
 
 clean:
-	rm delta-tests
+	rm id-gen
