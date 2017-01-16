@@ -77,6 +77,10 @@ ByteArray decompress(ByteArray compba){
   return ba;
 }
 
+int isTopVal(ByteArray ba){
+  return (ba.len == 1 && ba.data[0]==N128);
+}
+
 int getNumberOfSevenBits(int num){
   int count = 0;
   while (num > 0){
@@ -144,12 +148,11 @@ ByteArray incrementByteArray(ByteArray ba){
 
 ByteArray ByteArray_GenerateBetweenX(ByteArray ba1, ByteArray ba2, int withCompression){
   if(withCompression){
-    ba1 = decompress(ba1);
-    ba2 = decompress(ba2);
+    if (!isTopVal(ba1))
+      ba1 = decompress(ba1);
+    if (!isTopVal(ba2))
+      ba2 = decompress(ba2);
   }
-  printByteArray(ba1);
-  printByteArray(ba2);
-
   assert(lessThan(ba1, ba2));
 
   ByteArray res;
@@ -397,7 +400,7 @@ void testPushFront(){
 void testPushBack(){
   node* seq = createList();
   Traverse(seq);
-  for (int i = 0; i < 1000; ++i)
+  for (int i = 0; i < 10000; ++i)
     pushBack(seq);
   Traverse(seq);
   printSeqSize(seq);
