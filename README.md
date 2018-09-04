@@ -325,7 +325,7 @@ We show the same example as above, but with a different outcome.
 MVReg
 -----
 
-A Multi-Value Register is a simple data type that allows read and write operations of a given payload. Writes will overwrite all locally visible values, but concurrent writes will create alternative values tat are represented as siblings. Thus, unlike a sequential register, reads may return multiple values.   
+A Multi-Value Register is a simple data type that allows read and write operations of a given payload. Writes will overwrite all locally visible values, but concurrent writes will create alternative values that are represented as siblings. Thus, unlike a sequential register, reads may return multiple values.   
 
 In the example bellow, we do some sequential writes that overwrite the initial writes, and then we join two concurrent writes to show a pair of siblings. Finally we overwrite everything with the string "mars", in replica y, and show that this effect propagates on join to replica x. 
 
