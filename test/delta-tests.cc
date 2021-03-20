@@ -36,14 +36,16 @@
 #include <chrono>
 //#define NDEBUG  // Uncoment do stop testing asserts
 #include <assert.h>
-#include "delta-crdts.cc"
+#include <crdts/delta-crdts.h>
 
 using namespace std;
+using namespace crdts;
+
 
 void test_gset()
 {
   cout << "--- Testing: gset --\n";
-  gset<int> o1,o2,do1,do2;
+  GSet<int> o1,o2,do1,do2;
 
   do1.join(o1.add(1)); 
   do1.join(o1.add(2)); 
@@ -51,13 +53,13 @@ void test_gset()
   do2.join(o2.add(2)); 
   do2.join(o2.add(3)); 
 
-  gset<int> o3 = join(o1,o2);
-  gset<int> o4 = join(join(o1,do2),join(o2,do1));
+  GSet<int> o3 = join(o1,o2);
+  GSet<int> o4 = join(join(o1,do2),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.in(1) << o3.in(0) << endl;
 
-  gset<string> o5;
+  GSet<string> o5;
   o5.add("hello");
   o5.add("world");
   o5.add("my");
@@ -67,7 +69,7 @@ void test_gset()
 void test_twopset()
 {
   cout << "--- Testing: twopset --\n";
-  twopset<int> o1,o2,do1,do2;
+  TwoPSet<int> o1,o2,do1,do2;
 
   do1.join(o1.add(1)); 
   do1.join(o1.add(2)); 
@@ -75,13 +77,13 @@ void test_twopset()
   do2.join(o2.add(2)); 
   do2.join(o2.rmv(2)); 
 
-  twopset<int> o3 = join(o1,o2);
-  twopset<int> o4 = join(join(o1,do1),join(o2,do1));
+  TwoPSet<int> o3 = join(o1, o2);
+  TwoPSet<int> o4 = join(join(o1, do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.in(1) << o3.in(2) << endl;
 
-  twopset<string> o5;
+  TwoPSet<string> o5;
   o5.add("hello");
   o5.add("world");
   o5.add("my");
@@ -94,9 +96,9 @@ void test_gcounter()
 {
   cout << "--- Testing: gcounter --\n";
   // default template type is string key and int value
-  gcounter<> o1("idx");
-  gcounter<> o2("idy");
-  gcounter<> do1,do2;
+  GCounter<> o1("idx");
+  GCounter<> o2("idy");
+  GCounter<> do1, do2;
 
   do1.join(o1.inc());
   do1.join(o1.inc(4));
@@ -104,8 +106,8 @@ void test_gcounter()
   do2.join(o2.inc());
   do2.join(o2.inc());
 
-  gcounter<> o3 = join(o1,o2);
-  gcounter<> o4 = join(join(o1,do1),join(o2,do1));
+  GCounter<> o3 = join(o1,o2);
+  GCounter<> o4 = join(join(o1,do1),join(o2,do1));
 
   cout << o3 << endl;
   cout << o4 << endl;
@@ -117,9 +119,9 @@ void test_pncounter()
 {
   cout << "--- Testing: pncounter --\n";
   // counter with ints in keys and floats in values
-  pncounter<float,int> o1(2);
-  pncounter<float,int> o2(5);
-  pncounter<float,int> do1,do2;
+  PNCounter<float,int> o1(2);
+  PNCounter<float,int> o2(5);
+  PNCounter<float,int> do1,do2;
 
   do1.join(o1.inc(3.5));
   do1.join(o1.dec(2));
@@ -127,8 +129,8 @@ void test_pncounter()
   do2.join(o2.inc());
   do2.join(o2.inc(5));
 
-  pncounter<float,int> o3 = join(o1,o2);
-  pncounter<float,int> o4 = join(join(o1,do2),join(o2,do1));
+  PNCounter<float,int> o3 = join(o1,o2);
+  PNCounter<float,int> o4 = join(join(o1,do2),join(o2,do1));
 
   cout << o3 << endl;
   cout << o4 << endl;
@@ -138,9 +140,9 @@ void test_pncounter()
 void test_lexcounter()
 {
   cout << "--- Testing: lexcounter --\n";
-  lexcounter<int,char> o1('a');
-  lexcounter<int,char> o2('b');
-  lexcounter<int,char> do1,do2;
+  LexCounter<int,char> o1('a');
+  LexCounter<int,char> o2('b');
+  LexCounter<int,char> do1,do2;
 
   o1.inc(3);
   o1.inc(2);
@@ -158,7 +160,7 @@ void test_lexcounter()
 void test_aworset()
 {
   cout << "--- Testing: aworset --\n";
-  aworset<char> o1("idx"),o2("idy"),do1,do2;
+  AWORSet<char> o1("idx"),o2("idy"),do1,do2;
 
   do1.join(o1.add('a')); 
   do1.join(o1.add('b')); 
@@ -167,15 +169,15 @@ void test_aworset()
   do2.join(o2.add('c')); 
   do2.join(o2.rmv('b')); 
 
-  aworset<char> o3 = join(o1,o2);
-  aworset<char> o4 = join(join(o1,do1),join(o2,do1));
+  AWORSet<char> o3 = join(o1,o2);
+  AWORSet<char> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o3.in('c') << o3.in('b') << endl;
 
   assert (o3.in('c') == true &&  o3.in('b') == true);
 
-  aworset<string> o5("idz");
+  AWORSet<string> o5("idz");
   o5.add("hello");
   o5.add("world");
   o5.add("my");
@@ -185,7 +187,7 @@ void test_aworset()
 void test_rworset()
 {
   cout << "--- Testing: rworset --\n";
-  rworset<char> o1("id x"),o2("id y"),do1,do2;
+  RWORSet<char> o1("id x"),o2("id y"),do1,do2;
 
   do1.join(o1.add('a')); 
   do1.join(o1.add('b')); 
@@ -194,8 +196,8 @@ void test_rworset()
   do2.join(o2.add('c')); 
   do2.join(o2.rmv('b')); 
 
-  rworset<char> o3 = join(o1,o2);
-  rworset<char> o4 = join(join(o1,do1),join(o2,do1));
+  RWORSet<char> o3 = join(o1,o2);
+  RWORSet<char> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
 
@@ -206,7 +208,7 @@ void test_rworset()
 void test_mvreg()
 {
   cout << "--- Testing: mvreg --\n";
-  mvreg<string> o1("id x"),o2("id y"),do1,do2;
+  MVReg<string> o1("id x"),o2("id y"),do1,do2;
 
   do1.join(o1.write("hello")); 
   do1.join(o1.write("world")); 
@@ -214,8 +216,8 @@ void test_mvreg()
   do2.join(o2.write("world")); 
   do2.join(o2.write("hello")); 
 
-  mvreg<string> o3 = join(o1,o2);
-  mvreg<string> o4 = join(join(o1,do1),join(o2,do1));
+  MVReg<string> o3 = join(o1,o2);
+  MVReg<string> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   o3.write("hello world");
@@ -224,7 +226,7 @@ void test_mvreg()
 
   cout << "--- Testing: mvreg with reduce --\n";
 
-  mvreg<int> o5("id x"),o6("id y"),o7("id z");
+  MVReg<int> o5("id x"),o6("id y"),o7("id z");
 
   o5.write(3);
   o6.write(5);
@@ -237,7 +239,7 @@ void test_mvreg()
   cout << o5.resolve() << endl;
   cout << o5.read() << endl;
 
-  mvreg<pair<int,int>> o8("id x"),o9("id y"),o10("id z");
+  MVReg<pair<int,int>> o8("id x"),o9("id y"),o10("id z");
 
   // notice that the default order for pairs is lexicographic in C++
   // cout << (pair<int,int>(0,1) < pair<int,int>(1,0)) << endl;
@@ -290,7 +292,7 @@ void test_maxord()
 
 void example1()
 {
-  aworset<string> sx("x"),sy("y");
+  AWORSet<string> sx("x"),sy("y");
 
   // Node x
   sx.add("apple");
@@ -306,7 +308,7 @@ void example1()
 
 void example2()
 {
-  rworset<string,char> sx('x'),sy('y');
+  RWORSet<string,char> sx('x'),sy('y');
 
   // Node x
   sx.add("apple");
@@ -322,16 +324,16 @@ void example2()
 
 void example3()
 {
-  gset<int> sx;
+  GSet<int> sx;
 
   // Node x does initial operations
   sx.add(1); sx.add(4);
 
   // Replicate full state in sy;
-  gset<int> sy=sx;
+  GSet<int> sy=sx;
 
   // Node y records operations in delta
-  gset<int> dy;
+  GSet<int> dy;
   dy=sy.add(2);
   dy.join(sy.add(3));  // Join delta to delta
 
@@ -347,7 +349,7 @@ void example3()
 void test_maxpairs()
 {
   cout << "--- Testing: lexjoin on pairs --\n";
-  pair<int,gset<int> > a, b, c, d;
+  pair<int,GSet<int> > a, b, c, d;
   a.first=1;
   a.second.add(0);
   b.first=0;
@@ -356,13 +358,13 @@ void test_maxpairs()
   cout << c << endl;
   d=lexjoin(a,b);
   cout << d << endl;
-  pair<float,twopset<char> > e;
+  pair<float,TwoPSet<char> > e;
 }
 
 void test_lwwreg()
 {
   cout << "--- Testing: lwwreg --\n";
-  lwwreg<int,string> r;
+  LWWReg<int,string> r;
 
   r.write(1,"Hello");
   cout << r << endl;
@@ -379,14 +381,14 @@ void test_lwwreg()
 void test_rwlwwset()
 {
   cout << "--- Testing: rwlwwset --\n";
-  rwlwwset<int,string> s;
+  RWLWWSet<int,string> s;
   s.add(1,"a");
   s.add(1,"b");
   s.add(10000,"e");
   s.add(2,"b");
   cout << s << endl;
   cout << s.in("b") << endl;
-  rwlwwset<int,string> t;
+  RWLWWSet<int,string> t;
   t.rmv(2,"b");
   t.rmv(6,"e");
   t.add(1,"c");
@@ -398,15 +400,15 @@ void test_rwlwwset()
 void test_ewflag()
 {
   cout << "--- Testing: ewflag --\n";
-  ewflag<> o1("id x"),o2("id y"),do1,do2;
+  EWFlag<> o1("id x"),o2("id y"),do1,do2;
 
   do1.join(o1.enable()); 
 
   do2.join(o2.enable()); 
   do2.join(o2.enable()); // re-enable is fine
 
-  ewflag<> o3 = join(o1,o2);
-  ewflag<> o4 = join(join(o1,do1),join(o2,do1));
+  EWFlag<> o3 = join(o1,o2);
+  EWFlag<> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o4.read() << endl;
@@ -419,15 +421,15 @@ void test_ewflag()
 void test_dwflag()
 {
   cout << "--- Testing: dwflag --\n";
-  dwflag<> o1("id x"),o2("id y"),do1,do2;
+  DWFlag<> o1("id x"),o2("id y"),do1,do2;
 
   do1.join(o1.disable()); 
 
   do2.join(o2.disable()); 
   do2.join(o2.disable()); // re-disable is fine
 
-  dwflag<> o3 = join(o1,o2);
-  dwflag<> o4 = join(join(o1,do1),join(o2,do1));
+  DWFlag<> o3 = join(o1,o2);
+  DWFlag<> o4 = join(join(o1,do1),join(o2,do1));
   cout << o3 << endl;
   cout << o4 << endl;
   cout << o4.read() << endl;
@@ -439,7 +441,7 @@ void test_dwflag()
 
 void test_ormap()
 {
-  ormap<string,twopset<string>> m1,m2;
+  ORMap<string,TwoPSet<string>> m1,m2;
   m1["color"].add("red");
   m1["color"].add("blue");
   m2["taste"].add("bitter");
@@ -452,14 +454,14 @@ void test_ormap()
  
  
 
-  dotcontext<string> dc;
-  aworset<int> s1("x",dc),s2("x",dc);
+  DotContext<string> dc;
+  AWORSet<int> s1("x",dc),s2("x",dc);
   s1.add(1); s2.add(2);
   cout << s1 << endl;
   cout << s2 << endl;
 
-  dotcontext<string> dc2;
-  ormap<string,aworset<string>> m3("x",dc),m4("y",dc2);
+  DotContext<string> dc2;
+  ORMap<string,AWORSet<string>> m3("x",dc),m4("y",dc2);
   m3["color"].add("red");
   m3["color"].add("blue");
   m4["color"].add("green");
@@ -471,7 +473,7 @@ void test_ormap()
   m3.join(m4);
   cout << m3["color"] << endl;
 
-  ormap<string,aworset<string>> mx("x"),d1,d2;
+  ORMap<string,AWORSet<string>> mx("x"),d1,d2;
   mx["color"].add("red");
   mx["color"].add("blue");
 
@@ -484,7 +486,7 @@ void test_ormap()
   cout << d1 << endl; // Will erase observed dots in the "color" entry
   cout << d2 << endl; // Will add a dot (x:3) tagged "black" entry under "color"
 
-  ccounter<int> cc1("x"),cc2("y");
+  CausalCounter<int> cc1("x"),cc2("y");
   cc1.inc(10);
   cc2.join(cc1);
   cc2.inc(10);
@@ -502,7 +504,7 @@ void test_ormap()
   cout << cc1.read() << endl;
    
   cout << "--- Map I ---" << endl;
-  ormap<string,rworset<string>> m5("x"),m6("y");
+  ORMap<string,RWORSet<string>> m5("x"),m6("y");
   m5["color"].add("red");
   m5["taste"].add("bitter");
   m6["sound"].add("loud");
@@ -524,7 +526,7 @@ void test_ormap()
   
   cout << "--- Map F ---" << endl;
 
-  ormap<int,ormap<string,aworset<string>>> m7("x");
+  ORMap<int,ORMap<string,AWORSet<string>>> m7("x");
   m7[2]["color"].add("red");
   cout << m7 << endl;
 
@@ -533,7 +535,7 @@ void test_ormap()
 
 void benchmark1()
 {
-  aworset<int,char> g('i');
+  AWORSet<int,char> g('i');
 //  twopset<int> g;
 
   using namespace std::chrono;
@@ -574,7 +576,7 @@ void benchmark1()
 
 void example_gset()
 {
-  gset<string> a,b;
+  GSet<string> a,b;
 
   a.add("red");
   b.add("blue");
@@ -584,7 +586,7 @@ void example_gset()
 
 void example_twopset()
 {
-  twopset<float> a,b;
+  TwoPSet<float> a,b;
 
   a.add(3.1415);
   a.rmv(3.1415);
@@ -593,7 +595,7 @@ void example_twopset()
 
   cout << join(a,b) << endl; // 2PSet: S( 42 ) T ( 3.1415 )
 
-  gset<float> c;
+  GSet<float> c;
   c.add(42);
 
   cout << ( join(a,b).read() == c.read() ) << endl; // true
@@ -601,7 +603,7 @@ void example_twopset()
 
 void example_pair()
 {
-  pair<gset<int>,gset<char>> a,b,c;
+  pair<GSet<int>, GSet<char>> a,b,c;
 
   a.first.add(0); 
   b.first.add(1);
@@ -623,7 +625,7 @@ void example_lexpair()
 
 void example_gcounter()
 {
-  gcounter<unsigned int> x("x"),y("y"),z("z");
+  GCounter<unsigned int> x("x"),y("y"),z("z");
 
   x.inc(); x.inc();
   y.inc(2);
@@ -642,7 +644,7 @@ void example_gcounter()
 
 void example_pncounter()
 {
-  pncounter<int,char> x('a'), y('b');
+  PNCounter<int,char> x('a'), y('b');
 
   x.inc(4); x.dec();
   y.dec();
@@ -656,7 +658,7 @@ void example_pncounter()
 
 void example_lexcounter()
 {
-  lexcounter<int> x("a"), y("b");
+  LexCounter<int> x("a"), y("b");
 
   x.inc(4); x.dec();
   y.dec();
@@ -670,7 +672,7 @@ void example_lexcounter()
 
 void example_ccounter()
 {
-  ccounter<int> x("a"), y("b");
+  CausalCounter<int> x("a"), y("b");
 
   x.inc(4); x.dec();
   y.dec();
@@ -688,7 +690,7 @@ void example_ccounter()
 
 void example_aworset()
 {
-  aworset<float> x("a"), y("b");
+  AWORSet<float> x("a"), y("b");
 
   x.add(3.14); x.add(2.718); x.rmv(3.14);
   y.add(3.14);
@@ -704,7 +706,7 @@ void example_aworset()
 
 void example_rworset()
 {
-  rworset<float> x("a"), y("b");
+  RWORSet<float> x("a"), y("b");
 
   x.add(3.14); x.add(2.718); x.rmv(3.14);
   y.add(3.14);
@@ -721,7 +723,7 @@ void example_rworset()
 
 void example_ormap()
 {
-  ormap<string,aworset<string>> mx("x"),my("y");
+  ORMap<string, AWORSet<string>> mx("x"),my("y");
 
   mx["paint"].add("blue");
   mx["sound"].add("loud");  mx["sound"].add("soft");
@@ -744,7 +746,7 @@ void example_ormap()
 
   cout << my << endl; // in the "paint" key there is only "green" 
 
-  ormap<int,ormap<string,aworset<string>>> ma("alice"), mb("bob");
+  ORMap<int,ORMap<string,AWORSet<string>>> ma("alice"), mb("bob");
 
   ma[23]["color"].add("red at 23");
   ma[44]["color"].add("blue at 44");
@@ -758,7 +760,7 @@ void example_ormap()
 
 void example_gmap()
 {
-  gmap<char,int> gmx, gmy;
+  GMap<char,int> gmx, gmy;
 
   gmx['a']=1; 
   gmx['b']=0; 
@@ -773,7 +775,7 @@ void example_gmap()
 
 void example_bcounter()
 {
-  bcounter<int,char> bcx('a'), bcy('b');
+  BCounter<int,char> bcx('a'), bcy('b');
 
   bcx.inc(10);
   cout << bcx << endl;
@@ -824,14 +826,14 @@ void example_orseq()
 
   // Simple ORSEQ
 
-  orseq<> seq("rid");
-  seq.push_back('a');
+  ORSeq<> seq("rid");
+  seq.pushBack('a');
   cout << seq << endl;
-  seq.push_back('b');
+  seq.pushBack('b');
   cout << seq << endl;
-  seq.push_back('c');
-  seq.push_front('0');
-  seq.push_front('1');
+  seq.pushBack('c');
+  seq.pushFront('0');
+  seq.pushFront('1');
   cout << seq << endl;
 
   auto i = seq.begin();
@@ -839,8 +841,8 @@ void example_orseq()
   seq.insert(i,'x');
   cout << seq << endl;
 
-  orseq<> seq2("b");
-  seq2.push_back('y');
+  ORSeq<> seq2("b");
+  seq2.pushBack('y');
   cout << seq2 << endl;
 
   seq.join(seq2);
@@ -853,10 +855,10 @@ void example_orseq()
 
   // Map with a ORSEQ inside
 
-  ormap<string,orseq<char>> ms1("id1"),ms2("id2");
-  ms1["upper"].push_back('a');
-  ms2["upper"].push_front('b');
-  ms2["lower"].push_front('c');
+  ORMap<string,ORSeq<char>> ms1("id1"),ms2("id2");
+  ms1["upper"].pushBack('a');
+  ms2["upper"].pushFront('b');
+  ms2["lower"].pushFront('c');
   ms1.join(ms2);
   cout << ms1 << endl;
   ms2.erase("upper");
@@ -866,12 +868,12 @@ void example_orseq()
   // Metadata growth, insertions and deletions of added elements,
   // while keeping the first element there
 
-  orseq<> seq3("s3");
-  seq3.push_back('a');
+  ORSeq<> seq3("s3");
+  seq3.pushBack('a');
   cout << seq3 << endl;
   for (int ops=0; ops < 1000; ops++)
   {
-    seq3.push_front('d');
+    seq3.pushFront('d');
     seq3.erase(seq3.begin());
   }
   cout << seq3 << endl;
@@ -879,12 +881,12 @@ void example_orseq()
   // Metadata growth, insertions and deletions of added elements,
   // while keeping the last added element there
 
-  orseq<> seq4("s4");
-  seq4.push_back('a');
+  ORSeq<> seq4("s4");
+  seq4.pushBack('a');
   cout << seq4 << endl;
   for (int ops=0; ops < 1000; ops++)
   {
-    seq4.push_back('d');
+    seq4.pushBack('d');
     seq4.erase(seq4.begin());
   }
   cout << seq4 << endl;
@@ -896,7 +898,7 @@ void example_orseq()
 
 void  example_mvreg()
 {
-  mvreg<string> x("uid-x"),y("uid-y");
+  MVReg<string> x("uid-x"),y("uid-y");
 
   x.write("hello"); x.write("world"); 
 
@@ -911,7 +913,7 @@ void  example_mvreg()
 
   cout << x.read() << endl; // Output is ( mars )
 
-  mvreg<int> a("uid-a"), b("uid-b");
+  MVReg<int> a("uid-a"), b("uid-b");
 
   a.write(0); b.write(3); a.join(b); 
 
@@ -925,7 +927,7 @@ void  example_mvreg()
 
   cout << a.read() << endl; // Output is ( 1 )
 
-  mvreg<pair<int,int>> j("uid-j"),k("uid-k"),l("uid-l");
+  MVReg<pair<int,int>> j("uid-j"),k("uid-k"),l("uid-l");
 
   j.write(pair<int,int>(0,0));
   k.write(pair<int,int>(1,0));
@@ -940,8 +942,8 @@ void  example_mvreg()
 
 void test_bag()
 {
-  bag<pair<int,int>> b("i");
-  bag<pair<int,int>> c("j");
+  Bag<pair<int,int>> b("i");
+  Bag<pair<int,int>> c("j");
 
   b.mydata().first=1;
   cout << b.mydata() << endl;
@@ -955,7 +957,7 @@ void test_bag()
   cout << b << endl;
 
   // Now inside a map
-  ormap<string,bag<pair<int,int>>> ma("y");
+  ORMap<string,Bag<pair<int,int>>> ma("y");
 
   cout << ma["a"] << endl;
   ma["a"].fresh();
@@ -968,7 +970,7 @@ void test_bag()
 
 void test_rwcounter()
 {
-  rwcounter<int> rwc1("i"),rwc2("j");
+  RWCounter<int> rwc1("i"),rwc2("j");
 
   rwc1.inc();
   rwc1.inc(2);
@@ -994,7 +996,7 @@ void test_rwcounter()
   cout << rwc1 << endl;
   cout << rwc1.read() << endl;
 
-  ormap<string,rwcounter<float>> mx("x");
+  ORMap<string, RWCounter<float>> mx("x");
 
   cout << mx["adds"] << endl;
   cout << mx["adds"] << endl;
@@ -1007,7 +1009,7 @@ void test_rwcounter()
   cout << mx["adds"].read() << endl;
   cout << mx << endl;
 
-  ormap<string,rwcounter<float>> my("y");
+  ORMap<string, RWCounter<float>> my("y");
 
   my.join(mx);
   my.erase("prints");
@@ -1069,7 +1071,7 @@ int main(int argc, char * argv[])
 //  
 //  cout << join(m1,m2) << endl; // shows: friend -> {bob}
 
-  ormap<string,rwcounter<int>> m1("dev1"),m2("dev2");
+  ORMap<string, RWCounter<int>> m1("dev1"),m2("dev2");
 
   m1["friend"].inc(2);
   m2.join(m1); m2.erase("friend");
