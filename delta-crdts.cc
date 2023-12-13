@@ -122,7 +122,7 @@ vector<T> among(const vector<T> & l, const vector<T> & r, int j=0)
   assert (l < r);
   vector<T> res;
   // adjust res as forwardly compact as possible
-  for (int is = 0; is <= l.size(); is++)
+  for (size_t is = 0; is <= l.size(); is++)
   {
     res.assign(l.begin(),l.begin()+is); // get initial segment
     if ( is < l.size() ) // if partial segment, try appending one
@@ -305,19 +305,19 @@ public:
 
   map<pair<K,int>,T> ds;  // Map of dots to vals
 
-  dotcontext<K> cbase;
-  dotcontext<K> & c;
-
+  
+  std::shared_ptr<dotcontext<K>> c;
+  ~dotkernel() {}
   // if no causal context supplied, used base one
-  dotkernel() : c(cbase) {} 
+  dotkernel() : c(std::make_shared<dotcontext<K>>()) {}
   // if supplied, use a shared causal context
-  dotkernel(dotcontext<K> &jointc) : c(jointc) {} 
-//  dotkernel(const dotkernel<T,K> &adk) : c(adk.c), ds(adk.ds) {}
+  dotkernel(std::shared_ptr<dotcontext<K>> jointc) : c(jointc) {} 
+  //dotkernel(const dotkernel<T,K> &adk) : c(adk.c), ds(adk.ds) {}
 
   dotkernel<T,K> & operator=(const dotkernel<T,K> & adk)
   {
     if (&adk == this) return *this;
-    if (&c != &adk.c) c=adk.c; 
+    if (c != adk.c) c=adk.c; 
     ds=adk.ds;
     return *this;
   }
@@ -330,7 +330,7 @@ public:
         "->" << dv.second << " ";
     output << ") ";
 
-    cout << o.c;
+    cout << *o.c;
 
     return output;            
   }
@@ -348,7 +348,7 @@ public:
       if ( it != ds.end() && ( ito == o.ds.end() || it->first < ito->first))
       {
         // dot only at this
-        if (o.c.dotin(it->first)) // other knows dot, must delete here 
+        if (o.c->dotin(it->first)) // other knows dot, must delete here 
           ds.erase(it++);
         else // keep it
           ++it;
@@ -356,7 +356,7 @@ public:
       else if ( ito != o.ds.end() && ( it == ds.end() || ito->first < it->first))
       {
         // dot only at other
-        if(! c.dotin(ito->first)) // If I dont know, import
+        if(! c->dotin(ito->first)) // If I dont know, import
           ds.insert(*ito);
         ++ito;
       }
@@ -367,7 +367,7 @@ public:
       }
     } while (it != ds.end() || ito != o.ds.end() );
     // CC
-    c.join(o.c);
+    c->join(*o.c);
   }
 
   void deepjoin (const dotkernel<T,K> & o)
@@ -383,7 +383,7 @@ public:
       if ( it != ds.end() && ( ito == o.ds.end() || it->first < ito->first))
       {
         // dot only at this
-        if (o.c.dotin(it->first)) // other knows dot, must delete here 
+        if (o.c->dotin(it->first)) // other knows dot, must delete here 
           ds.erase(it++);
         else // keep it
           ++it;
@@ -391,7 +391,7 @@ public:
       else if ( ito != o.ds.end() && ( it == ds.end() || ito->first < it->first))
       {
         // dot only at other
-        if(! c.dotin(ito->first)) // If I dont know, import
+        if(! c->dotin(ito->first)) // If I dont know, import
           ds.insert(*ito);
         ++ito;
       }
@@ -409,7 +409,7 @@ public:
       }
     } while (it != ds.end() || ito != o.ds.end() );
     // CC
-    c.join(o.c);
+    c->join(*o.c);
   }
 
 
@@ -417,12 +417,12 @@ public:
   {
     dotkernel<T,K> res;
     // get new dot
-    pair<K,int> dot=c.makedot(id);
+    pair<K,int> dot=c->makedot(id);
     // add under new dot
     ds.insert(pair<pair<K,int>,T>(dot,val));
     // make delta
     res.ds.insert(pair<pair<K,int>,T>(dot,val));
-    res.c.insertdot(dot);
+    res.c->insertdot(dot);
     return res;
   }
 
@@ -430,7 +430,7 @@ public:
   pair<K,int> dotadd (const K& id, const T& val)
   {
     // get new dot
-    pair<K,int> dot=c.makedot(id);
+    pair<K,int> dot=c->makedot(id);
     // add under new dot
     ds.insert(pair<pair<K,int>,T>(dot,val));
     return dot;
@@ -444,13 +444,13 @@ public:
     {
       if (dsit->second == val) // match
       {
-        res.c.insertdot(dsit->first,false); // result knows removed dots
+        res.c->insertdot(dsit->first,false); // result knows removed dots
         ds.erase(dsit++);
       }
       else
         ++dsit;
     }
-    res.c.compact(); // Maybe several dots there, so atempt compactation
+    res.c->compact(); // Maybe several dots there, so atempt compactation
     return res;
   }
 
@@ -460,10 +460,10 @@ public:
     auto dsit=ds.find(dot);
     if (dsit != ds.end()) // found it
     {
-      res.c.insertdot(dsit->first,false); // result knows removed dots
+      res.c->insertdot(dsit->first,false); // result knows removed dots
       ds.erase(dsit++);
     }
-    res.c.compact(); // Atempt compactation
+    res.c->compact(); // Atempt compactation
     return res;
   }
 
@@ -471,8 +471,8 @@ public:
   {
     dotkernel<T,K> res;
     for (const auto & dv : ds) 
-      res.c.insertdot(dv.first,false);
-    res.c.compact();
+      res.c->insertdot(dv.first,false);
+    res.c->compact();
     ds.clear(); // Clear the payload, but remember context
     return res;
   }
@@ -654,9 +654,9 @@ private:
 public:
   ccounter() {} // Only for deltas and those should not be mutated
   ccounter(K k) : id(k) {} // Mutable replicas need a unique id
-  ccounter(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  ccounter(K k, std::shared_ptr<dotcontext<K>>jointc) : id(k), dk(jointc) {} 
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>> context()
   {
     return dk.c;
   }
@@ -786,11 +786,11 @@ private:
 public:
 
   twopset() {}
-  twopset(string id, dotcontext<K> &jointdc) {}
+  twopset(string id, std::shared_ptr<dotcontext<K>>jointdc) {}
   // For map compliance reply with an empty context
-  dotcontext<K> context()
+  std::shared_ptr<dotcontext<K>> context()
   {
-    return dotcontext<K>();
+    return std::make_shared<dotcontext<K>>();
   }
 
   set<T> read () { return s; }
@@ -869,9 +869,9 @@ private:
 public:
   aworset() {} // Only for deltas and those should not be mutated
   aworset(K k) : id(k) {} // Mutable replicas need a unique id
-  aworset(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  aworset(K k, std::shared_ptr<dotcontext<K>> jointc) : id(k), dk(jointc) {} 
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>>  context()
   {
     return dk.c;
   }
@@ -943,9 +943,9 @@ private:
 public:
   rworset() {} // Only for deltas and those should not be mutated
   rworset(K k) : id(k) {} // Mutable replicas need a unique id
-  rworset(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  rworset(K k, std::shared_ptr<dotcontext<K>>jointc) : id(k), dk(jointc) {} 
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>>  context()
   {
     return dk.c;
   }
@@ -1032,9 +1032,9 @@ private:
 public:
   mvreg() {} // Only for deltas and those should not be mutated
   mvreg(K k) : id(k) {} // Mutable replicas need a unique id
-  mvreg(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  mvreg(K k, std::shared_ptr<dotcontext<K>>jointc) : id(k), dk(jointc) {} 
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>>  context()
   {
     return dk.c;
   }
@@ -1106,9 +1106,9 @@ private:
 public:
   ewflag() {} // Only for deltas and those should not be mutated
   ewflag(K k) : id(k) {} // Mutable replicas need a unique id
-  ewflag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  ewflag(K k, std::shared_ptr<dotcontext<K>>jointc) : id(k), dk(jointc) {} 
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>>  context()
   {
     return dk.c;
   }
@@ -1169,9 +1169,9 @@ private:
 public:
   dwflag() {} // Only for deltas and those should not be mutated
   dwflag(K k) : id(k) {} // Mutable replicas need a unique id
-  dwflag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  dwflag(K k, std::shared_ptr<dotcontext<K>>jointc) : id(k), dk(jointc) {} 
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>> context()
   {
     return dk.c;
   }
@@ -1353,16 +1353,15 @@ class ormap
 {
   map<N,V> m;  
   
-  dotcontext<K> cbase;
-  dotcontext<K> & c;
+  std::shared_ptr<dotcontext<K>>  c;
   K id;
 
   public:
   // if no causal context supplied, use base one
-  ormap() : c(cbase) {} 
-  ormap(K i) : id(i), c(cbase) {} 
+  ormap() : c(std::make_shared<dotcontext<K>>()) {}
+  ormap(K i) : id(i), c(std::make_shared<dotcontext<K>>()) {}
   // if supplied, use a shared causal context
-  ormap(K i, dotcontext<K> &jointc) : id(i), c(jointc) {} 
+  ormap(K i, std::shared_ptr<dotcontext<K>> jointc) : id(i), c(jointc) {} 
 
 //  ormap( const ormap<N,V,K>& o ) :  id(o.id), m(o.m), c(o.c) {}
 
@@ -1374,14 +1373,14 @@ class ormap
     return *this;
   }
 
-  dotcontext<K> & context() const
+  std::shared_ptr<dotcontext<K>> context() const
   {
     return c;
   }
 
   friend ostream &operator<<( ostream &output, const ormap<N,V,K>& o)
   { 
-    output << "Map:" << o.c << endl;
+    output << "Map:" << *o.c << endl;
     for (const auto & kv : o.m)
       cout << kv.first << "->" << kv.second << endl;
     return output;            
@@ -1428,7 +1427,7 @@ class ormap
       {
         V v;
         v=kv.second.reset();
-        r.c.join(v.context());
+        r.c->join(*v.context());
       }
       m.clear();
     }
@@ -1438,7 +1437,7 @@ class ormap
 
   void join (const ormap<N,V> & o)
   {
-    const dotcontext<K> ic=c; // need access to an immutable context
+    const dotcontext<K> ic=*c; // need access to an immutable context
 
     // join all keys
     auto mit=m.begin(); auto mito=o.m.begin();
@@ -1467,7 +1466,7 @@ class ormap
         // obsolete some local entries. 
         V empty(id,o.context());
         mit->second.join(empty);
-        c=ic;
+        *c=ic;
 
         ++mit;
       }
@@ -1477,7 +1476,7 @@ class ormap
         // entry only at other
 
         (*this)[mito->first].join(mito->second);
-        c=ic;
+        *c=ic;
 
 
         ++mito;
@@ -1487,12 +1486,12 @@ class ormap
         // cout << "entry both\n";
         // in both
         (*this)[mito->first].join(mito->second);
-        c=ic;
+        *c=ic;
 
         ++mit; ++mito;
       }
     } while (mit != m.end() || mito != o.m.end());
-    c.join(o.c);
+    c->join(*o.c);
 
   }
 
@@ -1511,7 +1510,7 @@ public:
 
   bag() {} // Only for deltas and those should not be mutated
   bag(K k) : id(k) {} // Mutable replicas need a unique id
-  bag(K k, dotcontext<K> &jointc) : id(k), dk(jointc) {} 
+  bag(K k, std::shared_ptr<dotcontext<K>> jointc) : id(k), dk(jointc) {} 
 
   bag<V,K> & operator=(const bag<V,K> & o)
   {
@@ -1522,7 +1521,7 @@ public:
   }
 
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>>  context()
   {
     return dk.c;
   }
@@ -1530,7 +1529,7 @@ public:
   void insert(pair<pair<K,int>,V> t)
   {
     dk.ds.insert(pair<pair<K,int>,V>(t));
-    dk.c.insertdot(t.first);
+    dk.c->insertdot(t.first);
   }
 
   friend ostream &operator<<( ostream &output, const bag<V,K>& o)
@@ -1630,7 +1629,7 @@ private:
 public:
   rwcounter() {} // Only for deltas and those should not be mutated
   rwcounter(K k) : id(k), b(k) {} // Mutable replicas need a unique id
-  rwcounter(K k, dotcontext<K> &jointc) : id(k), b(k,jointc) {} 
+  rwcounter(K k, std::shared_ptr<dotcontext<K>> jointc) : id(k), b(k,jointc) {} 
 
   rwcounter<V,K> & operator=(const rwcounter<V,K> & o)
   {
@@ -1640,7 +1639,7 @@ public:
     return *this;
   }
 
-  dotcontext<K> & context()
+  std::shared_ptr<dotcontext<K>>  context()
   {
     return b.context();
   }
@@ -1846,16 +1845,16 @@ private:
   list<tuple<vector<bool>,pair<I,int>,T>> l;
   I id;  
 
-  dotcontext<I> cbase;
-  dotcontext<I> & c;
+
+  std::shared_ptr<dotcontext<I>> c;
 
 public:
 
   // if no causal context supplied, used base one
-  orseq() : c(cbase) {}  // Only for deltas and those should not be mutated
-  orseq(I i) : id(i), c(cbase) {} 
+  orseq() : c(std::make_shared<dotcontext<I>>()) {}  // Only for deltas and those should not be mutated
+  orseq(I i) : id(i), c(std::make_shared<dotcontext<I>>()) {}
   // if supplied, use a shared causal context
-  orseq(I i,dotcontext<I> &jointc) : id(i), c(jointc) {} 
+  orseq(I i, std::shared_ptr<dotcontext<I>> jointc) : id(i), c(jointc) {}
 
   orseq<T,I> & operator=(const orseq<T,I> & aos)
   {
@@ -1891,13 +1890,13 @@ public:
     orseq<T,I> res;
     if (i != l.end())
     {
-      res.c.insertdot(get<1>(*i));
+      res.c->insertdot(get<1>(*i));
       l.erase(i);
     }
     return res;
   }
 
-  dotcontext<I> & context()
+ std::shared_ptr<dotcontext<I>> context()
   {
     return c;
   }
@@ -1906,7 +1905,7 @@ public:
   {
     orseq<T,I> res;
     for (auto const & t : l)
-      res.c.insertdot(get<1>(t));
+      res.c->insertdot(get<1>(t));
     l.clear();
     return res;
   }
@@ -1928,11 +1927,11 @@ public:
         br=get<0>(*i);
         pos=among(bl,br);
         // get new dot
-        auto dot=c.makedot(id);
+        auto dot=c->makedot(id);
         auto tuple=make_tuple(pos,dot,val);
         l.insert(i,tuple);
         // delta
-        res.c.insertdot(dot);
+        res.c->insertdot(dot);
         res.l.push_front(tuple);
       }
     return res;
@@ -1949,10 +1948,10 @@ public:
     br.push_back(true);
     pos=among(bl,br);
     // get new dot
-    pair<I,int> dot=c.makedot(id);
+    pair<I,int> dot=c->makedot(id);
     l.push_back(make_tuple(pos,dot,val));
     // delta
-    res.c.insertdot(dot);
+    res.c->insertdot(dot);
     res.l=l;
     return res;
   }
@@ -1969,11 +1968,11 @@ public:
       br.push_back(true);
       pos=among(bl,br);
       // get new dot
-      auto dot=c.makedot(id);
+      auto dot=c->makedot(id);
       auto tuple=make_tuple(pos,dot,val);
       l.push_back(tuple);
       // delta
-      res.c.insertdot(dot);
+      res.c->insertdot(dot);
       res.l.push_front(tuple);
     }
     return res;
@@ -1991,11 +1990,11 @@ public:
       bl.push_back(false);
       pos=among(bl,br);
       // get new dot
-      auto dot=c.makedot(id);
+      auto dot=c->makedot(id);
       auto tuple=make_tuple(pos,dot,val);
       l.push_front(tuple);
       // delta
-      res.c.insertdot(dot);
+      res.c->insertdot(dot);
       res.l.push_front(tuple);
     }
     return res;
@@ -2022,7 +2021,7 @@ public:
       {
         // cout << "ds one\n";
         // entry only at this
-        if (o.c.dotin(get<1>(*it))) // other knows dot, must delete here 
+        if (o.c->dotin(get<1>(*it))) // other knows dot, must delete here 
           l.erase(it++);
         else // keep it
           ++it;
@@ -2031,7 +2030,7 @@ public:
       {
         //cout << "ds two\n";
         // entry only at other
-        if(! c.dotin(get<1>(*ito))) // If I dont know, import
+        if(! c->dotin(get<1>(*ito))) // If I dont know, import
         {
           l.insert(it,*ito); // it keeps pointing to next
         }
@@ -2045,7 +2044,7 @@ public:
       }
     } while (it != l.end() || ito != o.l.end() );
     // CC
-    c.join(o.c);
+    c->join(*o.c);
 
   }
 
